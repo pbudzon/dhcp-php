@@ -1,0 +1,105 @@
+<?php
+require __DIR__ . '/../../vendor/autoload.php';
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$logger = new Logger("dhcpserver");
+$logger->pushHandler(new StreamHandler("php://stdout", Logger::DEBUG));
+
+$listen = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+
+if(socket_bind($listen, '0.0.0.0', 67)){
+    $logger->addInfo("Listening on 0.0.0.0:67...");
+
+    while(true){
+        $buffer = null;
+
+        $logger->addInfo("Waiting for data...");
+        $buffer = socket_read($listen, 576);
+        if(!$buffer){
+            $error = socket_last_error($listen);
+            if($error){
+                socket_clear_error($listen);
+                $logger->addError("Error when receiving data from socket: ".$error);
+                continue;
+            }
+            else{
+                $logger->addWarning("No data from socket received!");
+            }
+        }
+        else {
+            $logger->addDebug("Parsing packet");
+            $pack = new DHCP\DHCPPacket($buffer);
+
+            $data = false;
+            if($pack->getType() == \DHCP\Options\DHCPOption53::MSG_DHCPDISCOVER){
+                $logger->addDebug("Discover request received");
+                $response = new \DHCP\DHCPPacket();
+                $response->setOp(\DHCP\DHCPPacket::OP_BOOTREPLY);
+                $response->setHtype($pack->getHtype());
+                $response->setHlen($pack->getHlen());
+                $response->setHops(0);
+                $response->setXid($pack->getXid());
+                $response->setSecs($pack->getSecs());
+                $response->setFlags($pack->getFlags());
+                $response->setCiaddr($pack->getCiaddr());
+                $response->setYiaddr('10.0.1.23');
+                $response->setChaddr($pack->getChaddr());
+                $response->setMagiccookie($pack->getMagiccookie());
+                $response->setType(\DHCP\Options\DHCPOption53::MSG_DHCPOFFER);
+
+                $data = $response->pack();
+                echo "Sending DHCPDiscover".PHP_EOL;
+            }
+            elseif($pack->getType() == \DHCP\Options\DHCPOption53::MSG_DHCPREQUEST){
+                $response = new \DHCP\DHCPPacket();
+                $response->setOp(\DHCP\DHCPPacket::OP_BOOTREPLY);
+                $response->setHtype($pack->getHtype());
+                $response->setHlen($pack->getHlen());
+                $response->setHops(0);
+                $response->setXid($pack->getXid());
+                $response->setSecs($pack->getSecs());
+                $response->setFlags($pack->getFlags());
+                $response->setCiaddr($pack->getCiaddr());
+                $response->setYiaddr('10.0.1.23');
+                $response->setChaddr($pack->getChaddr());
+                $response->setMagiccookie($pack->getMagiccookie());
+                $response->setType(\DHCP\Options\DHCPOption53::MSG_DHCPACK);
+                $response->setOption(51, 300);
+                $response->setOption(1, array(255, 255, 255, 0));
+                $response->setOption(3, array(10, 0, 1, 1));
+                $response->setOption(54, array(10, 0, 1, 1));
+                $response->setOption(6, array(8, 8, 8, 8, 8, 8, 4, 4));
+                $response->setOption(28, array(10, 0, 1, 255));
+
+//                $response->setOption(15, );
+//                $response->setOption(12, );
+
+
+                $data = $response->pack();
+                echo "Sending DHCPACK".PHP_EOL;
+            }
+            elseif($pack->getType() == \DHCP\Options\DHCPOption53::MSG_DHCPRELEASE){
+                echo "Got RELEASE".PHP_EOL;
+            }
+
+
+
+            if($data){
+                $response = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+                socket_set_option($response, SOL_SOCKET, SO_BROADCAST, 1);
+                socket_bind($response, "10.0.1.1", 68);
+
+                var_dump(socket_sendto($response, $data, strlen($data), 0, '255.255.255.255', 68));
+            }
+            else{
+                echo "Nothing to send, got response {$pack->getType()}".PHP_EOL;
+            }
+
+
+
+        }
+    }
+
+}

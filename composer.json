@@ -1,0 +1,24 @@
+{
+  "name": "paulina/dhcp",
+  "description": "DHCP protocol and server implementation in PHP",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Paulina Budzon",
+      "email": "paulina.budzon@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "~5.5",
+    "ext-sockets": "*",
+    "monolog/monolog": "~1.13",
+    "symfony/console": "~2.6",
+    "bramus/monolog-colored-line-formatter": "~2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "DHCP\\": "src/DHCP/",
+      "DHCPServer\\": "src/DHCPServer/"
+    }
+  }
+}
