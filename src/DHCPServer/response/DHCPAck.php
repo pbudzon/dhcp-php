@@ -2,10 +2,11 @@
 namespace DHCPServer\Response;
 
 use DHCP\Options\DHCPOption53;
+use DHCPServer\DHCPConfig;
 
 class DHCPAck extends DHCPResponse {
 
-    public function respond($dhcp_config){
+    public function respond(DHCPConfig $config){
         $requested_ip = $this->packet->getOptions()->getOption(50);
         if($requested_ip){
             $requested_ip = $requested_ip->getIp();
@@ -16,7 +17,7 @@ class DHCPAck extends DHCPResponse {
             $this->logger->info("Client sent ip: $requested_ip");
 
         }
-        $selected_ip = $this->findIpForClient($this->packet->getChaddr(), $dhcp_config, $requested_ip);
+        $selected_ip = $this->findIpForClient($this->packet->getChaddr(), $config, $requested_ip);
 
         if($requested_ip && $requested_ip != $selected_ip['ip']){
             $response = $this->createResponse(DHCPOption53::MSG_DHCPNAK);
@@ -25,7 +26,7 @@ class DHCPAck extends DHCPResponse {
                 'mac' => $this->packet->getChaddr()
             ));
 
-            return $response->pack();
+            return $response;
         }
 
         $response = $this->createResponse(DHCPOption53::MSG_DHCPACK);
@@ -45,6 +46,8 @@ class DHCPAck extends DHCPResponse {
             'mac' => $this->packet->getChaddr(),
             'ip' => $response->getYiaddr()
         ));
+
+        $this->lockIp($selected_ip, $this->packet->getChaddr(), get_class());
 
         return $response;
     }

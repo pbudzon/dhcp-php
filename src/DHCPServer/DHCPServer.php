@@ -84,7 +84,7 @@ class DHCPServer extends Command {
                 } else {
                     $this->logger->debug("Parsing packet");
                     $packet = new DHCPPacket($buffer, $this->logger);
-                    $this->sendResponse($this->getResponse($packet, $ip));
+                    $this->sendResponse($this->getResponse($packet));
                 }
             }
         }
@@ -93,17 +93,17 @@ class DHCPServer extends Command {
         }
     }
 
-    private function getResponse(DHCPPacket $packet, $dhcp_config){
+    private function getResponse(DHCPPacket $packet){
         $response = false;
         switch($packet->getType()){
             case DHCPOption53::MSG_DHCPDISCOVER:
                 $this->logger->debug("DHCP Discover received");
-                $response = (new Response\DHCPOffer($packet, $this->logger))->respond($dhcp_config);
+                $response = (new Response\DHCPOffer($packet, $this->logger))->respond($this->config);
                 break;
 
             case DHCPOption53::MSG_DHCPREQUEST:
                 $this->logger->debug("DHCP Request received");
-                $response = (new Response\DHCPAck($packet, $this->logger))->respond($dhcp_config);
+                $response = (new Response\DHCPAck($packet, $this->logger))->respond($this->config);
                 break;
 
             case DHCPOption53::MSG_DHCPRELEASE:

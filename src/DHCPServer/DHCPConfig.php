@@ -9,7 +9,7 @@ class DHCPConfig {
     private $broadcast;
     private $router;
     private $dns;
-    private $lease_time = 5;
+    private $lease_time = 30;
 
     public function __construct($ip = false, $dns = false){
         if($ip){
@@ -85,7 +85,7 @@ class DHCPConfig {
 
         $this->network      = $this->network($cidr);
         $this->mask         = $this->cidr2Mask($cidr);
-        $this->broadcast    = $this->broadcast();
+        $this->broadcast    = $this->broadcast($cidr);
         $this->router       = $this->ip;
 
         if($dns){
@@ -102,11 +102,18 @@ class DHCPConfig {
         return join('.', $netmask);
     }
 
-    private function broadcast(){
-        return long2ip(ip2long($this->network) + pow(2, (32 - 24)) - 1);
+    private function broadcast($cidr){
+        return long2ip(ip2long($this->network) + pow(2, (32 - (int)$cidr)) - 1);
     }
 
     private function network($cidr){
         return long2ip((ip2long($this->ip)) & ((-1 << (32 - (int)$cidr))));
+    }
+
+    public static function mask2cidr($mask){
+        $long = ip2long($mask);
+        $base = ip2long('255.255.255.255');
+        return 32-log(($long ^ $base)+1,2);
+
     }
 }

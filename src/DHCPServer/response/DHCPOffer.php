@@ -1,15 +1,14 @@
 <?php
 namespace DHCPServer\Response;
 
-use DHCP\DHCPPacket;
 use DHCP\Options\DHCPOption53;
-use DHCPServer\Postgresql;
+use DHCPServer\DHCPConfig;
 
 class DHCPOffer extends DHCPResponse{
 
 
-    public function respond($dhcp_config){
-        $selected_ip = $this->findIpForClient($this->packet->getChaddr(), $dhcp_config);
+    public function respond(DHCPConfig $config){
+        $selected_ip = $this->findIpForClient($this->packet->getChaddr(), $config);
 
         $response = $this->createResponse(DHCPOption53::MSG_DHCPOFFER);
         $response->setYiaddr($selected_ip['ip']);
@@ -19,6 +18,8 @@ class DHCPOffer extends DHCPResponse{
             'mac' => $this->packet->getChaddr(),
             'ip' => $response->getYiaddr()
         ));
+
+        $this->lockIp($selected_ip, $this->packet->getChaddr(), get_class());
 
         return $response;
     }
