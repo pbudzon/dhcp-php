@@ -1,0 +1,44 @@
+<?php
+namespace DHCP\Options;
+
+use Psr\Log\LoggerInterface;
+
+/**
+ * Class DHCPOption1 - Subnet Mask
+ * @package DHCP\Options
+ */
+class DHCPOption1 extends DHCPOption {
+
+    /**
+     * Option number = 1.
+     */
+    const OPTION = 1;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $name = 'Subnet Mask';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $length = 4;
+
+    private $mask = array();
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
+        parent::__construct($length, $details, $logger);
+        if($details){
+            $this->mask = $details;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareToSend(){
+        return array_merge(array(self::OPTION, self::$length), $this->mask);
+    }
+
+}
