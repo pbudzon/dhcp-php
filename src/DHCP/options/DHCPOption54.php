@@ -3,15 +3,30 @@ namespace DHCP\Options;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class DHCPOption54 - Server ID
+ * @package DHCP\Options
+ */
 class DHCPOption54 extends DHCPOption {
 
+    /**
+     * Option number = 54.
+     */
     const OPTION = 54;
-
+    /**
+     * {@inheritdoc}
+     */
     protected static $name = 'Server Identifier';
+    /**
+     * {@inheritdoc}
+     */
     protected static $length = 4;
 
     private $server = array();
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($length = null, $details = false, LoggerInterface $logger = null){
         parent::__construct($length, $details, $logger);
         if($details){
@@ -19,6 +34,9 @@ class DHCPOption54 extends DHCPOption {
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function prepareToSend(){
         return array_merge(array(self::OPTION, self::$length), $this->server);
     }

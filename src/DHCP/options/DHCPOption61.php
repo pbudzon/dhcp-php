@@ -3,16 +3,31 @@ namespace DHCP\Options;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class DHCPOption61 - Client ID
+ * @package DHCP\Options
+ */
 class DHCPOption61 extends DHCPOption {
 
+    /**
+     * Option number = 61.
+     */
     const OPTION = 61;
-
+    /**
+     * {@inheritdoc}
+     */
     protected static $name = 'Client-identifier';
+    /**
+     * {@inheritdoc}
+     */
     protected static $minLength = 2;
 
     private $type;
     private $id;
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($length = null, $details = false, LoggerInterface $logger = null){
         parent::__construct($length, $details, $logger);
 

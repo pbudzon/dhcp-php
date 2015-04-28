@@ -3,8 +3,18 @@ namespace DHCP;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class DHCPOptions
+ *
+ * This is a list representation of the options in the packet.
+ *
+ * @package DHCP
+ */
 class DHCPOptions implements \Iterator{
 
+    /**
+     * @var \DHCP\Options\DHCPOption[] List of options
+     */
     protected $options = array();
 
     /**
@@ -12,10 +22,16 @@ class DHCPOptions implements \Iterator{
      */
     private $logger;
 
+    /**
+     * @var int Internal key of the iterator.
+     */
     private $key = 0;
 
     /**
-     * @param bool $data
+     * Creates a list of options from given data from packet or an empty list if nothing passed.
+     *
+     * @param mixed $data
+     * @param LoggerInterface $logger
      * @todo Make this pretty
      */
     public function __construct($data = false, LoggerInterface $logger = null){
@@ -70,6 +86,11 @@ class DHCPOptions implements \Iterator{
         }
     }
 
+    /**
+     * Creates a representation of each option that can be then passed to pack() to create the response.
+     *
+     * @return array
+     */
     public function prepareToSend(){
         $data = array();
 
@@ -80,19 +101,32 @@ class DHCPOptions implements \Iterator{
         return $data;
     }
 
+    /**
+     * Adds an option with given data to the list.
+     * This should be used to add an option from the socket data; not manually creating an option.
+     * To manually add a new/replace existing option, use DHCPPacket\
+     *
+     * @param int $option Option number. If it's not defined in \DHCP\Options\DHCPOptionX, it will be skipped.
+     * @param int $length Length of the data (number of octets).
+     * @param mixed $details Data of the option (optional).
+     */
     private function addOption($option, $length = 0, $details = null){
-        if($option == 255 || $option == 0) return;
+        if($option == 255 || $option == 0) return; //prevent manual adding of End and Pad
 
         $className = 'DHCP\Options\DHCPOption'.$option;
         if(class_exists($className)){
             $this->options[] = new $className($length, $details, $this->logger);
-
         }
         elseif($this->logger){
             $this->logger->notice("Ignoring option {op}", array('op' => $option));
         }
     }
 
+    /**
+     * Replace existing (or add new if doesn't exist) option with a new object.
+     * @param int $option Option number.
+     * @param Options\DHCPOption $newObject New option object.
+     */
     public function replaceOption($option, $newObject){
         foreach($this->options as $k => $op){
             if(get_class($op) == 'DHCP\Options\DHCPOption'.$option){
@@ -105,6 +139,11 @@ class DHCPOptions implements \Iterator{
         $this->options[] = $newObject;
     }
 
+    /**
+     * Looks for specific option and returns it, if found.
+     * @param int $option Option number.
+     * @return mixed Option (Options\DHCPOption) or null if not found.
+     */
     public function getOption($option){
         foreach($this->options as $op){
             if(get_class($op) == 'DHCP\Options\DHCPOption'.$option){
@@ -114,10 +153,9 @@ class DHCPOptions implements \Iterator{
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
      * Return the current element
      * @link http://php.net/manual/en/iterator.current.php
-     * @return mixed Can return any type.
+     * @return Options\DHCPOption Option.
      */
     public function current()
     {
@@ -127,7 +165,6 @@ class DHCPOptions implements \Iterator{
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
      * Move forward to next element
      * @link http://php.net/manual/en/iterator.next.php
      * @return void Any returned value is ignored.
@@ -138,7 +175,6 @@ class DHCPOptions implements \Iterator{
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
      * Return the key of the current element
      * @link http://php.net/manual/en/iterator.key.php
      * @return mixed scalar on success, or null on failure.
@@ -149,7 +185,6 @@ class DHCPOptions implements \Iterator{
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
      * Checks if current position is valid
      * @link http://php.net/manual/en/iterator.valid.php
      * @return boolean The return value will be casted to boolean and then evaluated.
@@ -161,7 +196,6 @@ class DHCPOptions implements \Iterator{
     }
 
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
      * Rewind the Iterator to the first element
      * @link http://php.net/manual/en/iterator.rewind.php
      * @return void Any returned value is ignored.

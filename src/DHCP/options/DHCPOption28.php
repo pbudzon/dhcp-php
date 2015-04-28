@@ -3,15 +3,30 @@ namespace DHCP\Options;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class DHCPOption28 - Broadcast address
+ * @package DHCP\Options
+ */
 class DHCPOption28 extends DHCPOption {
 
+    /**
+     * Option number = 28.
+     */
     const OPTION = 28;
-
+    /**
+     * {@inheritdoc}
+     */
     protected static $name = 'Broadcast Address';
+    /**
+     * {@inheritdoc}
+     */
     protected static $length = 4;
 
     private $address = array();
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($length = null, $details = false, LoggerInterface $logger = null){
         parent::__construct($length, $details, $logger);
         if($details){
@@ -19,6 +34,9 @@ class DHCPOption28 extends DHCPOption {
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function prepareToSend(){
         return array_merge(array(self::OPTION, self::$length), $this->address);
     }

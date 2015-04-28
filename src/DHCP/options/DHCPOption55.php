@@ -3,15 +3,30 @@ namespace DHCP\Options;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class DHCPOption55 - Parameter Request List
+ * @package DHCP\Options
+ */
 class DHCPOption55 extends DHCPOption {
 
+    /**
+     * Option number = 55.
+     */
     const OPTION = 55;
-
+    /**
+     * {@inheritdoc}
+     */
     protected static $name = 'Parameter Request List';
+    /**
+     * {@inheritdoc}
+     */
     protected static $minLength = 1;
 
     private $parameters;
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($length = null, $details = false, LoggerInterface $logger = null){
         parent::__construct($length, $details, $logger);
 

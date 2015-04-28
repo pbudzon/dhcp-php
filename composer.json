@@ -20,5 +20,8 @@
       "DHCP\\": "src/DHCP/",
       "DHCPServer\\": "src/DHCPServer/"
     }
+  },
+  "require-dev": {
+    "phpdocumentor/phpdocumentor": "dev-master"
   }
 }

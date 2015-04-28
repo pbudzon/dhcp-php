@@ -3,11 +3,23 @@ namespace DHCP\Options;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class DHCPOption53 - DHCP Message type
+ * @package DHCP\Options
+ */
 class DHCPOption53 extends DHCPOption {
 
+    /**
+     * Option number = 53.
+     */
     const OPTION = 53;
-
+    /**
+     * {@inheritdoc}
+     */
     protected static $name = 'DHCP Message Type';
+    /**
+     * {@inheritdoc}
+     */
     protected static $length = 1;
 
     protected $type;
@@ -22,6 +34,9 @@ class DHCPOption53 extends DHCPOption {
     const MSG_DHCPINFORM = 8;
     const MSG_UNUSED = 9;
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($length = null, $details = false, LoggerInterface $logger = null){
         parent::__construct($length, $details, $logger);
         if($details){
@@ -29,14 +44,25 @@ class DHCPOption53 extends DHCPOption {
         }
     }
 
+    /**
+     * Returns current type.
+     * @return int Any of the MSG_ constants.
+     */
     public function getType(){
         return $this->type;
     }
 
+    /**
+     * Sets current type to given value.
+     * @param int $type Any of the MSG_ constants.
+     */
     public function setType($type){
         $this->type = $type;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function prepareToSend(){
         return array(self::OPTION, self::$length, $this->type);
     }

@@ -84,6 +84,9 @@ class DHCPServer extends Command {
                 } else {
                     $this->logger->debug("Parsing packet");
                     $packet = new DHCPPacket($buffer, $this->logger);
+                    var_dump($buffer);
+                    var_dump($packet);
+                    die();
                     $this->sendResponse($this->getResponse($packet));
                 }
             }
