@@ -1,5 +1,5 @@
 {
-  "name": "paulina/dhcp",
+  "name": "pbudzon/dhcp",
   "description": "DHCP protocol and server implementation in PHP",
   "license": "MIT",
   "authors": [
@@ -22,6 +22,6 @@
     }
   },
   "require-dev": {
-    "phpdocumentor/phpdocumentor": "dev-master"
+    "phpunit/phpunit": "5.*"
   }
 }
