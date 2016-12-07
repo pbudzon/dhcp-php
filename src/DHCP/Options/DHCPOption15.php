@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption15 - Domain name
+ *
  * @package DHCP\Options
  */
-class DHCPOption15 extends DHCPOption {
+class DHCPOption15 extends DHCPOption
+{
 
     /**
      * Option number = 15.

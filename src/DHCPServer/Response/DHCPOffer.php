@@ -4,20 +4,24 @@ namespace DHCPServer\Response;
 use DHCP\Options\DHCPOption53;
 use DHCPServer\DHCPConfig;
 
-class DHCPOffer extends DHCPResponse{
+class DHCPOffer extends DHCPResponse
+{
 
 
-    public function respond(DHCPConfig $config){
+    public function respond(DHCPConfig $config)
+    {
         $selected_ip = $this->findIpForClient($this->packet->getChaddr(), $config);
 
         $response = $this->createResponse(DHCPOption53::MSG_DHCPOFFER);
         $response->setYiaddr($selected_ip['ip']);
         $response->setOption(255, false);
 
-        $this->logger->info("Sending offer", array(
+        $this->logger->info(
+            "Sending offer", array(
             'mac' => $this->packet->getChaddr(),
-            'ip' => $response->getYiaddr()
-        ));
+            'ip'  => $response->getYiaddr()
+        )
+        );
 
         $this->lockIp($selected_ip, $this->packet->getChaddr(), get_class());
 

@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption51 - IP Address Lease time
+ *
  * @package DHCP\Options
  */
-class DHCPOption51 extends DHCPOption {
+class DHCPOption51 extends DHCPOption
+{
 
     /**
      * Option number = 51.
@@ -27,26 +29,34 @@ class DHCPOption51 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
-        if($details){
-            $this->setTime(array_shift($details));
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
+        if ($data) {
+            $this->setTime(array_shift($data));
         }
     }
 
-    public function getTime(){
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
+    }
+
+    public function getTime()
+    {
         return $this->time;
     }
 
-    public function setTime($time){
+    public function setTime($time)
+    {
         $this->time = array_map("ord", str_split(pack("N", $time)));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prepareToSend(){
+    public function prepareToSend()
+    {
         return array_merge(array(self::OPTION, self::$length), $this->time);
     }
-
 }

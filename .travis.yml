@@ -2,5 +2,9 @@ language: php
 php:
   - '5.5'
   - '5.6'
-install: composer install --no-dev --no-interaction --no-progress --no-suggest
+install: composer install --no-interaction --no-progress --no-suggest
+script:
+  - ./vendor/bin/phpcs --extensions=php --standard=PSR2 -s src/
+  - ./vendor/bin/phpmd src/ text cleancode,codesize,design,naming,unusedcode
+  - phpunit
 

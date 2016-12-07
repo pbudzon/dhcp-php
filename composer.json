@@ -17,11 +17,14 @@
   },
   "autoload": {
     "psr-4": {
+      "DHCP\\Tests\\": "tests/DHCP/",
       "DHCP\\": "src/DHCP/",
       "DHCPServer\\": "src/DHCPServer/"
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "5.*"
+    "phpunit/phpunit": "5.*",
+    "phpmd/phpmd": "@stable",
+    "squizlabs/php_codesniffer": "2.*"
   }
 }

@@ -25,9 +25,10 @@ use Psr\Log\LoggerInterface;
  * ```
  *
  * @package DHCP
- * @see https://www.ietf.org/rfc/rfc2132.txt RFC2131 Dynamic Host Configuration Protocol
+ * @see     https://www.ietf.org/rfc/rfc2132.txt RFC2131 Dynamic Host Configuration Protocol
  */
-class DHCPPacket {
+class DHCPPacket
+{
 
     /**
      * Packet type: request from client
@@ -82,7 +83,8 @@ class DHCPPacket {
      */
     protected $flags;
     /**
-     * @var int  Client IP address; only filled in if client is in BOUND, RENEW or REBINDING state and can respond to ARP request
+     * @var int  Client IP address; only filled in if client is in BOUND, RENEW or REBINDING state and can respond to
+     *      ARP request
      */
     protected $ciaddr;
     /**
@@ -112,7 +114,8 @@ class DHCPPacket {
     protected $file;
     /**
      * @var array Magic DHCP Cookie extracted from options.
-     * The first four octets of the 'options' field of the DHCP message contain the (decimal) values 99, 130, 83 and 99, respectively (this is the same magic cookie as is defined in RFC 1497
+     * The first four octets of the 'options' field of the DHCP message contain the (decimal) values 99, 130, 83 and
+     * 99, respectively (this is the same magic cookie as is defined in RFC 1497
      */
     protected $magiccookie;
     /**
@@ -123,14 +126,15 @@ class DHCPPacket {
     /**
      * Creates a new DHCPPacket object.
      *
-     * @param mixed $packet Pass binary data from network socket to be processed.
+     * @param mixed           $packet Pass binary data from network socket to be processed.
      * @param LoggerInterface $logger
      */
-    public function __construct($packet = false, LoggerInterface $logger = null){
-        if($logger){
+    public function __construct($packet = false, LoggerInterface $logger = null)
+    {
+        if ($logger) {
             $this->logger = $logger;
         }
-        if($packet) {
+        if ($packet) {
 
             $data = unpack(self::UNPACK_FORMAT, $packet);
 
@@ -151,15 +155,14 @@ class DHCPPacket {
                 $this->sname = implode("", $this->convertToHex($data, "sname", 64, true));
                 $this->file = implode("", $this->convertToHex($data, 'file', 128, true));
 
-                for($i = 1; $i <= 4; $i++){
+                for ($i = 1; $i <= 4; $i++) {
                     $this->magiccookie[] = $data['cookie'.$i];
 
                 }
 
                 $this->options = new DHCPOptions($data, $logger);
             }
-        }
-        else{
+        } else {
             $this->options = new DHCPOptions(false, $logger);
         }
     }
@@ -175,16 +178,29 @@ class DHCPPacket {
      *
      * @return mixed
      */
-    public function pack(){
-        $parameters = array(self::PACK_FORMAT, $this->op, $this->htype, $this->hlen, $this->hops, $this->xid, $this->secs,
-            $this->flags, $this->ciaddr, $this->yiaddr, $this->siaddr, $this->giaddr);
+    public function pack()
+    {
+        $parameters = array(
+            self::PACK_FORMAT,
+            $this->op,
+            $this->htype,
+            $this->hlen,
+            $this->hops,
+            $this->xid,
+            $this->secs,
+            $this->flags,
+            $this->ciaddr,
+            $this->yiaddr,
+            $this->siaddr,
+            $this->giaddr
+        );
 
         $chaddr = explode(":", $this->chaddr);
-        foreach($chaddr as $v){
+        foreach ($chaddr as $v) {
             $parameters[] = hexdec($v);
         }
 
-        $parameters += array_fill(count($parameters), 16-$this->hlen, 0);
+        $parameters += array_fill(count($parameters), 16 - $this->hlen, 0);
 
         //sname
         $parameters += array_fill(count($parameters), 64, 0);
@@ -202,41 +218,50 @@ class DHCPPacket {
 
     /**
      * Finds option describing type of the packet (DISCOVER, OFFER, etc) and returns the type if found.
+     *
      * @return int One of the Options\DHCPOption53 MSG_ constants or null if type was not found.
      */
-    public function getType(){
+    public function getType()
+    {
         /**
          * @var $typeOption Options\DHCPOption53
          */
         $typeOption = $this->options->getOption(53);
-        if($typeOption){
+        if ($typeOption) {
             return $typeOption->getType();
         }
     }
 
     /**
      * Find and change or create a new option with the type of the packet.
+     *
      * @param int $type One of the Options\DHCPOption53 MSG_ constants.
      */
-    public function setType($type){
+    public function setType($type)
+    {
         $typeOption = new Options\DHCPOption53(1, array($type), $this->logger);
         $this->options->replaceOption(53, $typeOption);
     }
 
     /**
      * Sets any option to specified value.
-     * @param int $option Option number. Option must be defined in Options\DHCPOptionX where X is option number.
-     * @param mixed $value value to set the option to.
+     *
+     * @param int   $option Option number. Option must be defined in Options\DHCPOptionX where X is option number.
+     * @param mixed $value  value to set the option to.
      */
-    public function setOption($option, $value){
+    public function setOption($option, $value)
+    {
         $className = 'DHCP\Options\DHCPOption'.$option;
-        if(!is_array($value)) $value = array($value);
-        $newOption = new $className(null, $value, $this->logger);
+        if (!is_array($value)) {
+            $value = array($value);
+        }
+        $newOption = new $className(count($value), $value, $this->logger);
         $this->options->replaceOption($option, $newOption);
     }
 
     /**
      * Returns $op
+     *
      * @return int
      */
     public function getOp()
@@ -246,6 +271,7 @@ class DHCPPacket {
 
     /**
      * Sets $op to given value. Must be one of the OP_ constants.
+     *
      * @param int $op
      */
     public function setOp($op)
@@ -255,6 +281,7 @@ class DHCPPacket {
 
     /**
      * Returns $htype
+     *
      * @return int
      */
     public function getHtype()
@@ -264,6 +291,7 @@ class DHCPPacket {
 
     /**
      * Sets $htype to given value.
+     *
      * @param int $htype
      */
     public function setHtype($htype)
@@ -273,6 +301,7 @@ class DHCPPacket {
 
     /**
      * Returns $hlen
+     *
      * @return int
      */
     public function getHlen()
@@ -282,6 +311,7 @@ class DHCPPacket {
 
     /**
      * Sets $hlen to given value.
+     *
      * @param int $hlen
      */
     public function setHlen($hlen)
@@ -291,6 +321,7 @@ class DHCPPacket {
 
     /**
      * Returns $hops.
+     *
      * @return int
      */
     public function getHops()
@@ -300,6 +331,7 @@ class DHCPPacket {
 
     /**
      * Sets $hops to given value.
+     *
      * @param int $hops
      */
     public function setHops($hops)
@@ -309,6 +341,7 @@ class DHCPPacket {
 
     /**
      * Returns $xid.
+     *
      * @return int
      */
     public function getXid()
@@ -318,6 +351,7 @@ class DHCPPacket {
 
     /**
      * Sets $xid to given value.
+     *
      * @param int $xid
      */
     public function setXid($xid)
@@ -327,6 +361,7 @@ class DHCPPacket {
 
     /**
      * Returns $secs.
+     *
      * @return int
      */
     public function getSecs()
@@ -336,6 +371,7 @@ class DHCPPacket {
 
     /**
      * Sets $secs to given value.
+     *
      * @param int $secs
      */
     public function setSecs($secs)
@@ -345,6 +381,7 @@ class DHCPPacket {
 
     /**
      * Returns $flags.
+     *
      * @return int
      */
     public function getFlags()
@@ -355,6 +392,7 @@ class DHCPPacket {
     /**
      * Sets flags to given value.
      * Pass 1 to set BROADCAST flag.
+     *
      * @param int $flags
      */
     public function setFlags($flags)
@@ -364,6 +402,7 @@ class DHCPPacket {
 
     /**
      * Returns $ciaddr in X.X.X.X format.
+     *
      * @return string
      */
     public function getCiaddr()
@@ -374,11 +413,12 @@ class DHCPPacket {
     /**
      * Sets $ciaddr to given value.
      * Accepts ip address as X.X.X.X or as long (int).
+     *
      * @param mixed $ciaddr
      */
     public function setCiaddr($ciaddr)
     {
-        if(strpos($ciaddr, ".") !== false){
+        if (strpos($ciaddr, ".") !== false) {
             $ciaddr = ip2long($ciaddr);
         }
         $this->ciaddr = $ciaddr;
@@ -386,6 +426,7 @@ class DHCPPacket {
 
     /**
      * Returns $yiaddr in X.X.X.X format.
+     *
      * @return string
      */
     public function getYiaddr()
@@ -396,11 +437,12 @@ class DHCPPacket {
     /**
      * Sets $yiaddr to given value.
      * Accepts ip address as X.X.X.X or as long (int).
+     *
      * @param mixed $yiaddr
      */
     public function setYiaddr($yiaddr)
     {
-        if(strpos($yiaddr, ".") !== false){
+        if (strpos($yiaddr, ".") !== false) {
             $yiaddr = ip2long($yiaddr);
         }
         $this->yiaddr = $yiaddr;
@@ -408,6 +450,7 @@ class DHCPPacket {
 
     /**
      * Returns $siaddr;
+     *
      * @return int
      */
     public function getSiaddr()
@@ -417,6 +460,7 @@ class DHCPPacket {
 
     /**
      * Sets $siaddr to given value.
+     *
      * @param int $siaddr
      */
     public function setSiaddr($siaddr)
@@ -426,6 +470,7 @@ class DHCPPacket {
 
     /**
      * Returns $giaddr.
+     *
      * @return int
      */
     public function getGiaddr()
@@ -435,6 +480,7 @@ class DHCPPacket {
 
     /**
      * Sets $giaddr to given value.
+     *
      * @param int $giaddr
      */
     public function setGiaddr($giaddr)
@@ -444,6 +490,7 @@ class DHCPPacket {
 
     /**
      * Returns $chaddr.
+     *
      * @return string
      */
     public function getChaddr()
@@ -453,6 +500,7 @@ class DHCPPacket {
 
     /**
      * Sets $chaddr to given value.
+     *
      * @param string $chaddr
      */
     public function setChaddr($chaddr)
@@ -462,6 +510,7 @@ class DHCPPacket {
 
     /**
      * Returns $sname;
+     *
      * @return string
      */
     public function getSname()
@@ -471,6 +520,7 @@ class DHCPPacket {
 
     /**
      * Sets $sname to given value.
+     *
      * @param string $sname
      */
     public function setSname($sname)
@@ -480,6 +530,7 @@ class DHCPPacket {
 
     /**
      * Returns $file.
+     *
      * @return string
      */
     public function getFile()
@@ -489,6 +540,7 @@ class DHCPPacket {
 
     /**
      * Sets $file to given value.
+     *
      * @param string $file
      */
     public function setFile($file)
@@ -498,6 +550,7 @@ class DHCPPacket {
 
     /**
      * Returns $magiccookie.
+     *
      * @return string
      */
     public function getMagiccookie()
@@ -508,6 +561,7 @@ class DHCPPacket {
     /**
      * Sets $magiccookie to given value.
      * This value should always be array(99, 130, 83, 99) according to RFC.
+     *
      * @param string $magiccookie
      */
     public function setMagiccookie($magiccookie)
@@ -517,6 +571,7 @@ class DHCPPacket {
 
     /**
      * List of options in the packet.
+     *
      * @return DHCPOptions
      */
     public function getOptions()
@@ -526,6 +581,7 @@ class DHCPPacket {
 
     /**
      * Replace the current list of options with given one.
+     *
      * @param DHCPOptions $options
      */
     public function setOptions($options)
@@ -534,13 +590,17 @@ class DHCPPacket {
     }
 
 
-    private function convertToHex($data, $keyName, $length, $breakOnEmpty = false){
+    private function convertToHex($data, $keyName, $length, $breakOnEmpty = false)
+    {
         $converted = array();
-        for($i = 1; $i <= $length; $i++){
+        for ($i = 1; $i <= $length; $i++) {
             $hex = dechex($data[$keyName.$i]);
-            if($breakOnEmpty && $hex == 0) break;
+            if ($breakOnEmpty && $hex == 0) {
+                break;
+            }
             $converted[] = $hex;
         }
+
         return $converted;
     }
 

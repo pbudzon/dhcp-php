@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption61 - Client ID
+ *
  * @package DHCP\Options
  */
-class DHCPOption61 extends DHCPOption {
+class DHCPOption61 extends DHCPOption
+{
 
     /**
      * Option number = 61.
@@ -28,12 +30,17 @@ class DHCPOption61 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
 
-        $details = array_map('dechex', $details);
-        $this->type = array_shift($details);
-        $this->id = implode(":", $details);
+        $data = array_map('dechex', $data);
+        $this->type = array_shift($data);
+        $this->id = implode(":", $data);
     }
 
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
+    }
 }

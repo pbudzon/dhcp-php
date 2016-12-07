@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption3 - Router
+ *
  * @package DHCP\Options
  */
-class DHCPOption3 extends DHCPOption {
+class DHCPOption3 extends DHCPOption
+{
 
     /**
      * Option number = 3.
@@ -27,18 +29,41 @@ class DHCPOption3 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
-        if($details){
-            $this->router = $details;
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
+        if ($data) {
+            $this->setRouter($data);
         }
+    }
+
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prepareToSend(){
+    public function prepareToSend()
+    {
         return array_merge(array(self::OPTION, count($this->router)), $this->router);
+    }
+
+    /**
+     * @return array|bool
+     */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
+    /**
+     * @param array|bool $router
+     */
+    public function setRouter($router)
+    {
+        $this->router = $router;
     }
 
 }

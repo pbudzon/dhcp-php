@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption121 - Classless route
+ *
  * @package DHCP\Options
  */
-class DHCPOption121 extends DHCPOption {
+class DHCPOption121 extends DHCPOption
+{
 
     /**
      * Option number = 121.

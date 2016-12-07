@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption255 - END
+ *
  * @package DHCP\Options
  */
-class DHCPOption255 extends DHCPOption {
+class DHCPOption255 extends DHCPOption
+{
 
     /**
      * Option number = 255.
@@ -25,14 +27,16 @@ class DHCPOption255 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prepareToSend(){
+    public function prepareToSend()
+    {
         return array(self::OPTION);
     }
 

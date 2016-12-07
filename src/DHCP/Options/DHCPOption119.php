@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption119 - Domain Search
+ *
  * @package DHCP\Options
  */
-class DHCPOption119 extends DHCPOption {
+class DHCPOption119 extends DHCPOption
+{
 
     /**
      * Option number = 119.

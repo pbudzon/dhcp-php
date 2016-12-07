@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption55 - Parameter Request List
+ *
  * @package DHCP\Options
  */
-class DHCPOption55 extends DHCPOption {
+class DHCPOption55 extends DHCPOption
+{
 
     /**
      * Option number = 55.
@@ -27,20 +29,25 @@ class DHCPOption55 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
 
-        if($details){
-            foreach($details as $option){
+        if ($data) {
+            foreach ($data as $option) {
                 $className = 'DHCP\Options\DHCPOption'.$option;
-                if(class_exists($className)){
+                if (class_exists($className)) {
                     $this->parameters[] = new $className(null, false, $logger);
-                }
-                else{
+                } else {
                     $logger->warning("Option 55: ignoring option $option");
                 }
             }
         }
+    }
+
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
     }
 
 }

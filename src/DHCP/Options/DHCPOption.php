@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Abstract class DHCPOption
+ *
  * @package DHCP\Options
  */
-abstract class DHCPOption {
+abstract class DHCPOption
+{
 
     /**
      * @var string Name of the option.
@@ -35,38 +37,54 @@ abstract class DHCPOption {
      * If you want to create an option manually, don't pass anything here, use specific set() methods to
      * modify the option's values.
      *
-     * @param mixed $length Number of octets that the data was taking in the packet.
-     * @param mixed $details Data from the packet.
+     * @param mixed           $length Number of octets that the data was taking in the packet.
+     * @param mixed           $data   Data from the packet.
      * @param LoggerInterface $logger
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
         $this->logger = $logger;
 
-        if(is_null($length)) return;
+        if (!is_null($length)) {
+            $this->validate($length, $data);
+        }
+    }
 
-        if(static::$length && $length != static::$length){
-            throw new \UnexpectedValueException("Length for option ".get_called_class()." must be {static::$length}, got $length");
+    protected function validate($length, $data)
+    {
+        if (static::$length && $length != static::$length) {
+            throw new \UnexpectedValueException(
+                "Length for option ".get_called_class()." must be ".static::$length.", got $length"
+            );
         }
 
-        if(static::$minLength && $length < static::$minLength){
-            throw new \UnexpectedValueException("Length for option  ".get_called_class()." must be at least {static::$length}, got $length");
+        if (static::$minLength && $length < static::$minLength) {
+            throw new \UnexpectedValueException(
+                "Length for option ".get_called_class()." must be at least ".static::$length.", got $length"
+            );
         }
 
-        if(static::$length && count($details) != static::$length){
-            throw new \InvalidArgumentException("Length of option details for  ".get_called_class()." must be {static::$length}");
+        if (static::$length && count($data) != static::$length) {
+            throw new \InvalidArgumentException(
+                "Length of option details for ".get_called_class()." must be ".static::$length
+            );
         }
 
-        if(static::$minLength && count($details) < static::$minLength){
-            throw new \InvalidArgumentException("Length of option details for  ".get_called_class()." must be at least {static::$minLength}");
+        if (static::$minLength && count($data) < static::$minLength) {
+            throw new \InvalidArgumentException(
+                "Length of option details for ".get_called_class()." must be at least ".static::$minLength
+            );
         }
     }
 
     /**
      * Creates a representation of the option that can be passed to pack() to send a packet.
      * This method should be overwritten in each option.
+     *
      * @return array
      */
-    public function prepareToSend(){
+    public function prepareToSend()
+    {
         return array();
     }
 }

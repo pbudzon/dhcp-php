@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption53 - DHCP Message type
+ *
  * @package DHCP\Options
  */
-class DHCPOption53 extends DHCPOption {
+class DHCPOption53 extends DHCPOption
+{
 
     /**
      * Option number = 53.
@@ -37,34 +39,44 @@ class DHCPOption53 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
-        if($details){
-            $this->type = array_shift($details);
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
+        if ($data) {
+            $this->setType(array_shift($data));
         }
+    }
+
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
     }
 
     /**
      * Returns current type.
+     *
      * @return int Any of the MSG_ constants.
      */
-    public function getType(){
+    public function getType()
+    {
         return $this->type;
     }
 
     /**
      * Sets current type to given value.
+     *
      * @param int $type Any of the MSG_ constants.
      */
-    public function setType($type){
+    public function setType($type)
+    {
         $this->type = $type;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prepareToSend(){
+    public function prepareToSend()
+    {
         return array(self::OPTION, self::$length, $this->type);
     }
-
 }

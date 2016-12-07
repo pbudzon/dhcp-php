@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption50 - Requested IP address
+ *
  * @package DHCP\Options
  */
-class DHCPOption50 extends DHCPOption {
+class DHCPOption50 extends DHCPOption
+{
 
     /**
      * Option number = 50.
@@ -27,26 +29,43 @@ class DHCPOption50 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
-        if($details){
-            $this->ip = $details;
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    {
+        parent::__construct($length, $data, $logger);
+        if ($data) {
+            $this->setIp($data);
         }
+    }
+
+
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
     }
 
     /**
      * Returns IP address in X.X.X.X format.
+     *
      * @return string
      */
-    public function getIp(){
+    public function getIp()
+    {
         return implode(".", $this->ip);
+    }
+
+    /**
+     * @param array|bool $ip
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prepareToSend(){
+    public function prepareToSend()
+    {
         return array_merge(array(self::OPTION, self::$length), $this->ip);
     }
-
 }

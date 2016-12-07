@@ -7,7 +7,7 @@ class Postgresql {
     private $connection;
 
     public function __construct(){
-        $this->connection = pg_connect("host=192.168.216.140 dbname=root user=root")
+        $this->connection = pg_connect("host=127.0.0.1 dbname=postgres user=root password=xyz")
         or die('Could not connect: ' . pg_last_error());
     }
 

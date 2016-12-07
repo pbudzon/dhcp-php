@@ -27,12 +27,33 @@ class DHCPOption12 extends DHCPOption {
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $details = false, LoggerInterface $logger = null){
-        parent::__construct($length, $details, $logger);
+    public function __construct($length = null, $data = false, LoggerInterface $logger = null){
+        parent::__construct($length, $data, $logger);
 
-        if($details){
-            $this->hostname = implode("", array_map('chr', $details));
+        if($data){
+            $this->setHostname(implode("", array_map('chr', $data)));
         }
+    }
+
+    protected function validate($length, $data)
+    {
+        parent::validate($length, $data);
+    }
+
+    /**
+     * @return string
+     */
+    public function getHostname()
+    {
+        return $this->hostname;
+    }
+
+    /**
+     * @param string $hostname
+     */
+    public function setHostname($hostname)
+    {
+        $this->hostname = $hostname;
     }
 
 }
