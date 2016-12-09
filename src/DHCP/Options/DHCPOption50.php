@@ -14,7 +14,7 @@ class DHCPOption50 extends DHCPOption
     /**
      * Option number = 50.
      */
-    const OPTION = 50;
+    protected static $option = 50;
     /**
      * {@inheritdoc}
      */
@@ -24,48 +24,18 @@ class DHCPOption50 extends DHCPOption
      */
     protected static $length = 4;
 
-    private $ip = array();
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
-    {
-        parent::__construct($length, $data, $logger);
-        if ($data) {
-            $this->setIp($data);
-        }
-    }
-
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
-    /**
-     * Returns IP address in X.X.X.X format.
-     *
-     * @return string
-     */
     public function getIp()
     {
-        return implode(".", $this->ip);
+        return implode(".", $this->data);
     }
 
     /**
-     * @param array|bool $ip
+     * Set IP using a regular IP format ("4.4.4.4") and not packet data.
+     *
+     * @param string $ip IP address, like "1.2.3.4"
      */
     public function setIp($ip)
     {
-        $this->ip = $ip;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function prepareToSend()
-    {
-        return array_merge(array(self::OPTION, self::$length), $this->ip);
+        $this->data = explode(".", $ip);
     }
 }

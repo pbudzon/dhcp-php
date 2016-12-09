@@ -35,7 +35,7 @@ class DHCPOptions implements \Iterator
      * @param LoggerInterface $logger
      * @todo Make this pretty
      */
-    public function __construct($data = false, LoggerInterface $logger = null)
+    public function __construct($data = null, LoggerInterface $logger = null)
     {
         $this->logger = $logger;
 
@@ -47,9 +47,9 @@ class DHCPOptions implements \Iterator
         $currentLength = 0;
         $currentPosition = 1;
         $currentDetails = array();
-        for ($i = 1; ; $i++) {
+        $i = 1;
+        while (true) {
             if (isset($data["options$i"])) {
-
                 if ($currentOption) {
                     if (!$currentLength) {
                         $currentLength = $data["options$i"];
@@ -71,7 +71,6 @@ class DHCPOptions implements \Iterator
                                 $currentLength = 0;
                                 $currentPosition = 1;
                                 $currentDetails = array();
-
                             } else {
                                 $currentPosition++;
                             }
@@ -83,6 +82,7 @@ class DHCPOptions implements \Iterator
             } else {
                 break;
             }
+            $i++;
         }
     }
 
@@ -217,6 +217,4 @@ class DHCPOptions implements \Iterator
     {
         $this->key = 0;
     }
-
-
 }

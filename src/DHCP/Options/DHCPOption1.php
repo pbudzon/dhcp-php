@@ -10,11 +10,10 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption1 extends DHCPOption
 {
-
     /**
      * Option number = 1.
      */
-    const OPTION = 1;
+    protected static $option = 1;
     /**
      * {@inheritdoc}
      */
@@ -24,49 +23,8 @@ class DHCPOption1 extends DHCPOption
      */
     protected static $length = 4;
 
-    /**
-     * @var array
-     */
-    private $mask = array();
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($length = null, $data = null, LoggerInterface $logger = null)
-    {
-        parent::__construct($length, $data, $logger);
-        if ($data) {
-            $this->setMask($data);
-        }
-    }
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
-    /**
-     * @return array
-     */
-    public function getMask()
-    {
-        return $this->mask;
-    }
-
-    /**
-     * @param array $mask
-     */
     public function setMask($mask)
     {
-        $this->mask = $mask;
+        $this->data = explode(".", $mask);
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function prepareToSend()
-    {
-        return array_merge(array(self::OPTION, self::$length), $this->mask);
-    }
-
 }

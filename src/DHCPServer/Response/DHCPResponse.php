@@ -58,10 +58,7 @@ abstract class DHCPResponse
                 if (!$static_ip['lease_time']) {
                     $static_ip['lease_time'] = 300;
                 }
-                $static_ip['mask'] = explode(".", $static_ip['mask']);
-                $static_ip['router'] = explode(".", $static_ip['router']);
-                $static_ip['dhcp'] = explode(".", $dhcp_config->getIp());
-                $static_ip['broadcast'] = explode(".", $static_ip['broadcast']);
+                $static_ip['dhcp'] = $dhcp_config->getIp();
 
                 return $static_ip;
             }
@@ -69,14 +66,13 @@ abstract class DHCPResponse
 
         return array(
             'ip'         => $this->findDynamicIp($dhcp_config, $mac, $requested_ip),
-            'mask'       => explode(".", $dhcp_config->getMask()),
-            'router'     => explode(".", $dhcp_config->getRouter()),
-            'dhcp'       => explode(".", $dhcp_config->getIp()),
-            'dns'        => explode(".", implode(".", $dhcp_config->getDns())),
-            'broadcast'  => explode(".", $dhcp_config->getBroadcast()),
+            'mask'       => $dhcp_config->getMask(),
+            'router'     => $dhcp_config->getRouter(),
+            'dhcp'       => $dhcp_config->getIp(),
+            'dns'        => $dhcp_config->getDns(),
+            'broadcast'  => $dhcp_config->getBroadcast(),
             'lease_time' => $dhcp_config->getLeaseTime()
         );
-
     }
 
     protected function lockIp($selected_ip, $mac, $reason)
@@ -85,7 +81,7 @@ abstract class DHCPResponse
             "Client $mac has locked {$selected_ip['ip']} for {$selected_ip['lease_time']}secs, reason: $reason"
         );
 
-        $ip = $selected_ip['ip']."/".DHCPConfig::mask2cidr(implode(".", $selected_ip['mask']));
+        $ip = $selected_ip['ip']."/".DHCPConfig::mask2cidr($selected_ip['mask']);
         (new Postgresql())->lockIp($ip, $selected_ip['lease_time'], $mac, $reason);
     }
 

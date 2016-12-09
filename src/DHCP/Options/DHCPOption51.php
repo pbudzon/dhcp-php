@@ -14,7 +14,7 @@ class DHCPOption51 extends DHCPOption
     /**
      * Option number = 51.
      */
-    const OPTION = 51;
+    protected static $option = 51;
     /**
      * {@inheritdoc}
      */
@@ -24,39 +24,33 @@ class DHCPOption51 extends DHCPOption
      */
     protected static $length = 4;
 
-    protected $time = array();
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
-    {
-        parent::__construct($length, $data, $logger);
-        if ($data) {
-            $this->setTime(array_shift($data));
-        }
-    }
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
-    public function getTime()
-    {
-        return $this->time;
-    }
-
     public function setTime($time)
     {
-        $this->time = array_map("ord", str_split(pack("N", $time)));
+        $this->data = array_map("ord", str_split(pack("N", $time)));
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function prepareToSend()
-    {
-        return array_merge(array(self::OPTION, self::$length), $this->time);
-    }
+//    /**
+//     * {@inheritdoc}
+//     */
+//    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
+//    {
+//        parent::__construct($length, $data, $logger);
+//        if ($data) {
+////            $this->setTime(array_shift($data));
+//        }
+//    }
+//
+//    protected function validate($length, $data)
+//    {
+//        parent::validate($length, $data);
+//    }
+//
+//    public function getTime()
+//    {
+//        return $this->time;
+//    }
+//
+//    public function setTime($time)
+//    {
+////        $this->time = array_map("ord", str_split(pack("N", $time)));
+//    }
 }

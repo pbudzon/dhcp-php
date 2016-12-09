@@ -124,6 +124,5 @@ class DHCPConfig
         $base = ip2long('255.255.255.255');
 
         return 32 - log(($long ^ $base) + 1, 2);
-
     }
 }

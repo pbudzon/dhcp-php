@@ -1,6 +1,7 @@
 <?php
 namespace DHCP;
 
+use DHCP\Options\DHCPOption;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -135,7 +136,6 @@ class DHCPPacket
             $this->logger = $logger;
         }
         if ($packet) {
-
             $data = unpack(self::UNPACK_FORMAT, $packet);
 
             if ($data) {
@@ -157,7 +157,6 @@ class DHCPPacket
 
                 for ($i = 1; $i <= 4; $i++) {
                     $this->magiccookie[] = $data['cookie'.$i];
-
                 }
 
                 $this->options = new DHCPOptions($data, $logger);
@@ -249,14 +248,19 @@ class DHCPPacket
      * @param int   $option Option number. Option must be defined in Options\DHCPOptionX where X is option number.
      * @param mixed $value  value to set the option to.
      */
-    public function setOption($option, $value)
+//    public function setOption($option, $value)
+//    {
+//        $className = 'DHCP\Options\DHCPOption'.$option;
+//        if (!is_array($value)) {
+//            $value = array($value);
+//        }
+//        $newOption = new $className(count($value), $value, $this->logger);
+//        $this->options->replaceOption($option, $newOption);
+//    }
+
+    public function addOption(DHCPOption $option)
     {
-        $className = 'DHCP\Options\DHCPOption'.$option;
-        if (!is_array($value)) {
-            $value = array($value);
-        }
-        $newOption = new $className(count($value), $value, $this->logger);
-        $this->options->replaceOption($option, $newOption);
+        $this->options->replaceOption($option::getOption(), $option);
     }
 
     /**
@@ -603,5 +607,4 @@ class DHCPPacket
 
         return $converted;
     }
-
 }

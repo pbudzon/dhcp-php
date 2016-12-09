@@ -14,7 +14,7 @@ class DHCPOption55 extends DHCPOption
     /**
      * Option number = 55.
      */
-    const OPTION = 55;
+    protected static $option = 55;
     /**
      * {@inheritdoc}
      */
@@ -24,30 +24,23 @@ class DHCPOption55 extends DHCPOption
      */
     protected static $minLength = 1;
 
-    private $parameters;
-
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
     {
         parent::__construct($length, $data, $logger);
 
         if ($data) {
+            $this->data = [];
             foreach ($data as $option) {
                 $className = 'DHCP\Options\DHCPOption'.$option;
                 if (class_exists($className)) {
-                    $this->parameters[] = new $className(null, false, $logger);
-                } else {
+                    $this->data[] = new $className(null, [], $logger);
+                } elseif ($this->logger) {
                     $logger->warning("Option 55: ignoring option $option");
                 }
             }
         }
     }
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
 }

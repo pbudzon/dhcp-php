@@ -14,7 +14,7 @@ class DHCPOption15 extends DHCPOption
     /**
      * Option number = 15.
      */
-    const OPTION = 15;
+    protected static $option = 15;
     /**
      * {@inheritdoc}
      */
@@ -23,5 +23,4 @@ class DHCPOption15 extends DHCPOption
      * {@inheritdoc}
      */
     protected static $minLength = 1;
-
 }

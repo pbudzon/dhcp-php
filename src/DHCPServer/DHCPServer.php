@@ -82,7 +82,8 @@ class DHCPServer extends Command
                     $this->reportSocketReadError($this->inputSocket);
                 } else {
                     $this->logger->debug("Parsing packet");
-                    $packet = new DHCPPacket($buffer, $this->logger);
+
+                    $packet = new DHCPPacket($buffer);
                     $this->sendResponse($this->getResponse($packet));
                 }
             }
@@ -93,7 +94,7 @@ class DHCPServer extends Command
 
     private function getResponse(DHCPPacket $packet)
     {
-        $response = false;
+        $response = null;
         switch ($packet->getType()) {
             case DHCPOption53::MSG_DHCPDISCOVER:
                 $this->logger->debug("DHCP Discover received");
@@ -106,8 +107,11 @@ class DHCPServer extends Command
                 break;
 
             case DHCPOption53::MSG_DHCPRELEASE:
-                $this->logger->debug("DHCP Release received");
+                $this->logger->debug("DHCP Release received, not implemented");
                 break;
+
+            default:
+                $this->logger->error("Unknown packet type: ".$packet->getType());
         }
 
         return $response;

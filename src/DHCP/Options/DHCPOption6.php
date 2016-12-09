@@ -14,7 +14,7 @@ class DHCPOption6 extends DHCPOption
     /**
      * Option number = 6.
      */
-    const OPTION = 6;
+    protected static $option = 6;
     /**
      * {@inheritdoc}
      */
@@ -24,55 +24,16 @@ class DHCPOption6 extends DHCPOption
      */
     protected static $minLength = 4;
 
-    private $dns = array();
-
     /**
-     * {@inheritdoc}
+     * Set list of DNS servers by passing a list of IP addresses instead of packet data.
+     *
+     * @param array $list List of IPs, for example ["10.10.20.10", "4.4.4.4", "6.6.6.6"]
      */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    public function setDataFromList($list = array())
     {
-        parent::__construct($length, $data, $logger);
-        if ($data) {
-            if (count($data) < 3) { //assume array with 1-3 ip addresses
-                $ips = array();
-                foreach ($data as $ip) {
-                    $ips = array_merge($ips, explode(".", $ip));
-                }
-                $data = $ips;
-            }
-
-            $this->setDns($data);
+        $this->data = array();
+        foreach ($list as $ip) {
+            $this->data = array_merge($this->data, explode(".", $ip));
         }
-    }
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function prepareToSend()
-    {
-        return array_merge(array(self::OPTION, count($this->dns)), $this->dns);
-    }
-
-    /**
-     * @return array
-     */
-    public function getDns()
-    {
-        return $this->dns;
-    }
-
-    /**
-     * @param array $dns
-     */
-    public function setDns($dns)
-    {
-        $this->dns = $dns;
-
-
     }
 }

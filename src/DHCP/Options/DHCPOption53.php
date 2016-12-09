@@ -14,7 +14,7 @@ class DHCPOption53 extends DHCPOption
     /**
      * Option number = 53.
      */
-    const OPTION = 53;
+    protected static $option = 53;
     /**
      * {@inheritdoc}
      */
@@ -23,8 +23,6 @@ class DHCPOption53 extends DHCPOption
      * {@inheritdoc}
      */
     protected static $length = 1;
-
-    protected $type;
 
     const MSG_DHCPDISCOVER = 1;
     const MSG_DHCPOFFER = 2;
@@ -36,47 +34,19 @@ class DHCPOption53 extends DHCPOption
     const MSG_DHCPINFORM = 8;
     const MSG_UNUSED = 9;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
-    {
-        parent::__construct($length, $data, $logger);
-        if ($data) {
-            $this->setType(array_shift($data));
-        }
-    }
 
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
-    /**
-     * Returns current type.
-     *
-     * @return int Any of the MSG_ constants.
-     */
     public function getType()
     {
-        return $this->type;
+        return array_shift($this->data);
     }
-
-    /**
-     * Sets current type to given value.
-     *
-     * @param int $type Any of the MSG_ constants.
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function prepareToSend()
-    {
-        return array(self::OPTION, self::$length, $this->type);
-    }
+//    /**
+//     * {@inheritdoc}
+//     */
+//    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
+//    {
+//        parent::__construct($length, $data, $logger);
+//        if ($data) {
+//            $this->setType(array_shift($data));
+//        }
+//    }
 }

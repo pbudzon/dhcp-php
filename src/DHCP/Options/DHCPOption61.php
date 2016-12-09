@@ -14,7 +14,7 @@ class DHCPOption61 extends DHCPOption
     /**
      * Option number = 61.
      */
-    const OPTION = 61;
+    protected static $option = 61;
     /**
      * {@inheritdoc}
      */
@@ -25,22 +25,37 @@ class DHCPOption61 extends DHCPOption
     protected static $minLength = 2;
 
     private $type;
-    private $id;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null)
+    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
     {
         parent::__construct($length, $data, $logger);
 
         $data = array_map('dechex', $data);
         $this->type = array_shift($data);
-        $this->id = implode(":", $data);
+        $this->data = implode(":", $data);
     }
 
     protected function validate($length, $data)
     {
         parent::validate($length, $data);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param mixed $type
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
     }
 }

@@ -14,10 +14,9 @@ class DHCPOption119 extends DHCPOption
     /**
      * Option number = 119.
      */
-    const OPTION = 119;
+    protected static $option = 119;
     /**
      * {@inheritdoc}
      */
     protected static $name = 'Domain Search';
-
 }

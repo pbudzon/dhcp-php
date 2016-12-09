@@ -5,14 +5,16 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class DHCPOption12 - Hostname
+ *
  * @package DHCP\Options
  */
-class DHCPOption12 extends DHCPOption {
+class DHCPOption12 extends DHCPOption
+{
 
     /**
      * Option number = 12.
      */
-    const OPTION = 12;
+    protected static $option = 12;
     /**
      * {@inheritdoc}
      */
@@ -21,39 +23,13 @@ class DHCPOption12 extends DHCPOption {
      * {@inheritdoc}
      */
     protected static $minLength = 1;
-
-    private $hostname;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($length = null, $data = false, LoggerInterface $logger = null){
-        parent::__construct($length, $data, $logger);
-
-        if($data){
-            $this->setHostname(implode("", array_map('chr', $data)));
-        }
-    }
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
-    /**
-     * @return string
-     */
-    public function getHostname()
-    {
-        return $this->hostname;
-    }
-
-    /**
-     * @param string $hostname
-     */
-    public function setHostname($hostname)
-    {
-        $this->hostname = $hostname;
-    }
-
+//
+//    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
+//    {
+//        parent::__construct($length, $data, $logger);
+//
+//        if ($data) {
+//            $this->setHostname($data);
+////            $this->setHostname(implode("", array_map('chr', $data)));
+//        }
 }

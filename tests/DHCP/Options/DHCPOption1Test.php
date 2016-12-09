@@ -7,16 +7,6 @@ use DHCP\Options\DHCPOption1;
 
 class DHCPOption1Test extends DHCPOptionTest
 {
-    public function testConstruct()
-    {
-        $option = new DHCPOption1();
-        $this->assertEmpty($option->getMask());
-
-        $option = new DHCPOption1(4, ['255', '255', '255', '255']);
-        $this->assertEquals(['255', '255', '255', '255'], $option->getMask());
-    }
-
-
     public function testConstructErrorLength()
     {
         $this->expectException(\UnexpectedValueException::class);
@@ -31,18 +21,11 @@ class DHCPOption1Test extends DHCPOptionTest
         $option = new DHCPOption1(4, []);
     }
 
-    public function testSetMask()
-    {
-        $option = new DHCPOption1();
-        $option->setMask(['255', '255', '255', '255']);
-        $this->assertEquals(['255', '255', '255', '255'], $option->getMask());
-    }
-
     public function testPrepareToSend()
     {
-        $option = new DHCPOption1();
-        $this->assertEquals([DHCPOption1::OPTION, 4], $option->prepareToSend());
-        $option->setMask(['255', '255', '255', '255']);
-        $this->assertEquals([DHCPOption1::OPTION, 4, '255', '255', '255', '255'], $option->prepareToSend());
+        $option = $option = new DHCPOption1();
+        $this->assertEquals([1, 0], $option->prepareToSend());
+        $option->setData(['255', '255', '255', '255']);
+        $this->assertEquals([1, 4, '255', '255', '255', '255'], $option->prepareToSend());
     }
 }
