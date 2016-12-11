@@ -10,7 +10,7 @@ class DHCPConfig
     private $broadcast;
     private $router;
     private $dns;
-    private $lease_time = 30;
+    private $lease_time = 300;
 
     public function __construct($ip = false, $dns = false)
     {

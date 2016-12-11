@@ -28,4 +28,18 @@ class DHCPOption1Test extends DHCPOptionTest
         $option->setData(['255', '255', '255', '255']);
         $this->assertEquals([1, 4, '255', '255', '255', '255'], $option->prepareToSend());
     }
+
+    public function testSetAndGetMask()
+    {
+        $option = new DHCPOption1();
+        $this->assertEquals('', $option->getMask());
+        $option->setMask('255.255.255.255');
+        $this->assertEquals('255.255.255.255', $option->getMask());
+        $this->assertEquals(['255', '255', '255', '255'], $option->getData());
+    }
+
+    public function testGetOption()
+    {
+        $this->assertEquals(1, DHCPOption1::getOption());
+    }
 }

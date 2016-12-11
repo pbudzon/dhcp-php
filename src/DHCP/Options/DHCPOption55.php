@@ -43,4 +43,15 @@ class DHCPOption55 extends DHCPOption
             }
         }
     }
+
+    public function prepareToSend()
+    {
+        $data = array();
+
+        foreach ($this->data as $option) {
+            $data = array_merge($data, $option->prepareToSend());
+        }
+
+        return $data;
+    }
 }

@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption15 extends DHCPOption
 {
-
     /**
      * Option number = 15.
      */
@@ -23,4 +22,14 @@ class DHCPOption15 extends DHCPOption
      * {@inheritdoc}
      */
     protected static $minLength = 1;
+
+    public function setDomainName($domainName)
+    {
+        $this->data = array_map("ord", str_split($domainName));
+    }
+
+    public function getDomainName()
+    {
+        return implode("", array_map('chr', $this->data));
+    }
 }

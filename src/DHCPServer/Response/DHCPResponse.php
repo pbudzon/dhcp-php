@@ -85,6 +85,11 @@ abstract class DHCPResponse
         (new Postgresql())->lockIp($ip, $selected_ip['lease_time'], $mac, $reason);
     }
 
+    protected function releaseIp($ip, $mac, $reason)
+    {
+        (new Postgresql())->expireIp($ip, $mac, $reason);
+    }
+
     private function findDynamicIp(DHCPConfig $config, $mac, $requested_ip)
     {
         $database = new Postgresql();
@@ -100,6 +105,7 @@ abstract class DHCPResponse
             return $currently_assigned['ip'];
         }
 
+        $this->logger->debug("No current lease, checking: ".$config->getNetwork());
         $max_static = $database->getNextDynamicIp($config->getNetwork());
         if ($max_static) {
             $this->logger->debug("Giving client $mac next ip after $max_static");

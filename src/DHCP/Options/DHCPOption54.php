@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption54 extends DHCPOption
 {
-
     /**
      * Option number = 54.
      */
@@ -24,8 +23,13 @@ class DHCPOption54 extends DHCPOption
      */
     protected static $length = 4;
 
-    public function setDHCP($dhcp)
+    public function setIdentifier($dhcp)
     {
         $this->data = explode(".", $dhcp);
+    }
+
+    public function getIdentifier()
+    {
+        return implode(".", $this->data);
     }
 }

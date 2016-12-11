@@ -9,12 +9,16 @@ class DHCPOption51Test extends DHCPOptionTest
 {
     public function testSetTime()
     {
-        $this->markTestIncomplete();
         $option = new DHCPOption51();
-        $this->assertEmpty($option->getData());
-
         $option->setTime(300);
-//        var_dump($option->getData());
+        $this->assertEquals([0, 0, 1, 44], $option->getData());
+        $this->assertEquals(300, $option->getTime());
     }
 
+    public function testConstructing()
+    {
+        $option = new DHCPOption51(4, [0, 0, 0, 100]);
+        $this->assertEquals([0, 0, 0, 100], $option->getData());
+        $this->assertEquals(100, $option->getTime());
+    }
 }

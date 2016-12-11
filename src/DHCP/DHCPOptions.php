@@ -9,10 +9,11 @@ use Psr\Log\LoggerInterface;
  * This is a list representation of the options in the packet.
  *
  * @package DHCP
+ *
+ * @SuppressWarnings(PHPMD.ElseExpression)
  */
 class DHCPOptions implements \Iterator
 {
-
     /**
      * @var \DHCP\Options\DHCPOption[] List of options
      */
@@ -47,12 +48,12 @@ class DHCPOptions implements \Iterator
         $currentLength = 0;
         $currentPosition = 1;
         $currentDetails = array();
-        $i = 1;
+        $current = 1;
         while (true) {
-            if (isset($data["options$i"])) {
+            if (isset($data["options$current"])) {
                 if ($currentOption) {
                     if (!$currentLength) {
-                        $currentLength = $data["options$i"];
+                        $currentLength = $data["options$current"];
                         if ($currentLength == 0) {
                             $this->addOption($currentOption);
                             $currentOption = false;
@@ -62,7 +63,7 @@ class DHCPOptions implements \Iterator
                         }
                     } else {
                         if ($currentPosition <= $currentLength) {
-                            $currentDetails[] = $data["options$i"];
+                            $currentDetails[] = $data["options$current"];
 
                             if ($currentPosition == $currentLength) {
                                 $this->addOption($currentOption, $currentLength, $currentDetails);
@@ -77,12 +78,12 @@ class DHCPOptions implements \Iterator
                         }
                     }
                 } else {
-                    $currentOption = $data["options$i"];
+                    $currentOption = $data["options$current"];
                 }
             } else {
                 break;
             }
-            $i++;
+            $current++;
         }
     }
 
@@ -121,20 +122,19 @@ class DHCPOptions implements \Iterator
         if (class_exists($className)) {
             $this->options[] = new $className($length, $details, $this->logger);
         } elseif ($this->logger) {
-            $this->logger->notice("Ignoring option {op}", array('op' => $option));
+            $this->logger->notice("DHCPOptions: Ignoring option $option");
         }
     }
 
     /**
      * Replace existing (or add new if doesn't exist) option with a new object.
      *
-     * @param int                $option    Option number.
      * @param Options\DHCPOption $newObject New option object.
      */
-    public function replaceOption($option, $newObject)
+    public function replaceOption($newObject)
     {
         foreach ($this->options as $k => $op) {
-            if (get_class($op) == 'DHCP\Options\DHCPOption'.$option) {
+            if (get_class($op) == get_class($newObject)) {
                 $this->options[$k] = $newObject;
 
                 return;
@@ -158,6 +158,8 @@ class DHCPOptions implements \Iterator
                 return $op;
             }
         }
+
+        return null;
     }
 
     /**
@@ -171,6 +173,8 @@ class DHCPOptions implements \Iterator
         if ($this->valid()) {
             return $this->options[$this->key];
         }
+
+        return null;
     }
 
     /**

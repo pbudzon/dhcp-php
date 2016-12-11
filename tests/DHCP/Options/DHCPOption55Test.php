@@ -15,6 +15,19 @@ class DHCPOption55Test extends DHCPOptionTest
         $option = new DHCPOption55(1, [50]);
         $this->assertArrayHasKey(0, $option->getData());
         $this->assertInstanceOf('DHCP\Options\DHCPOption50', $option->getData()[0]);
+
+
+        $logger = $this->getMockBuilder('\Psr\Log\NullLogger')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with("Option 55: ignoring option 20");
+        $option = new DHCPOption55(1, [50, 20], $logger);
+        $this->assertArrayHasKey(0, $option->getData());
+        $this->assertEquals(1, count($option->getData()));
+        $this->assertInstanceOf('DHCP\Options\DHCPOption50', $option->getData()[0]);
     }
 
     public function testConstructErrorLength()

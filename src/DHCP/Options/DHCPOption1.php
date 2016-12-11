@@ -27,4 +27,9 @@ class DHCPOption1 extends DHCPOption
     {
         $this->data = explode(".", $mask);
     }
+
+    public function getMask()
+    {
+        return implode(".", $this->data);
+    }
 }

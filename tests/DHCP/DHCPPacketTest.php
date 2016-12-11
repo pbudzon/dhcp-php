@@ -9,7 +9,7 @@ class DHCPPacketTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstructForDiscover()
     {
-        $data = file_get_contents(__DIR__.'/../resources/dhcpdiscover', FILE_BINARY);
+        $data = file_get_contents(__DIR__.'/../resources/dhcpdiscover.raw', FILE_BINARY);
 
         $packet = new DHCPPacket($data);
         $this->assertEquals(DHCPOption53::MSG_DHCPDISCOVER, $packet->getType());
@@ -20,7 +20,7 @@ class DHCPPacketTest extends \PHPUnit_Framework_TestCase
 
     public function testConstructForRequest()
     {
-        $data = file_get_contents(__DIR__.'/../resources/dhcprequest', FILE_BINARY);
+        $data = file_get_contents(__DIR__.'/../resources/dhcprequest.raw', FILE_BINARY);
 
         $packet = new DHCPPacket($data);
         $this->assertEquals(DHCPOption53::MSG_DHCPREQUEST, $packet->getType());

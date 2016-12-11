@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
  * Abstract class DHCPOption
  *
  * @package DHCP\Options
+ * @SuppressWarnings(PHPMD.NumberOfChildren)
  */
 abstract class DHCPOption
 {

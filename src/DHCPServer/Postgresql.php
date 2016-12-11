@@ -91,6 +91,7 @@ class Postgresql
 
     public function getCurrentLease($mac)
     {
+        $date = date("Y-m-d H:i:s");
         $result = pg_query_params(
             "select
             host(ip) as ip,
@@ -98,7 +99,7 @@ class Postgresql
             host(network(ip)) as network,
             host(broadcast(ip)) as broadcast
           from dhcp_leases where mac=$1 and expires_on > $2 order by assigned_on limit 1",
-            array($mac, date("Y-m-d H:i:s"))
+            array($mac, $date)
         )
         or die('Query failed: '.pg_last_error());
 
@@ -151,15 +152,44 @@ class Postgresql
         pg_free_result($result);
     }
 
+    public function expireIp($ip, $mac, $reason)
+    {
+        $expired = date("Y-m-d H:i:s");
+        $result = pg_query_params(
+            "update dhcp_leases set expires_on=$1, reason=$2 where mac=$3 and ip=$4 and expires_on > $5",
+            array($expired, $reason, $mac, $ip, $expired)
+        )
+        or die('Query failed: '.pg_last_error());
+
+        pg_free_result($result);
+
+        //expire all other active leases for this client
+        $result = pg_query_params(
+            "update dhcp_leases set expires_on=$1, reason=$2 where mac=$3 and ip!=$4 and expires_on > $5",
+            array($expired, $reason, $mac, $ip, $expired)
+        )
+        or die('Query failed: '.pg_last_error());
+
+        pg_free_result($result);
+    }
+
     public function getNextDynamicIp($network)
     {
         $static_ip = $this->getMaxStaticIpInNetwork($network);
 
-        $result = pg_query_params(
-            "select max(host(ip)) ip from dhcp_leases where host(network(ip))=$1 and host(ip) > $2",
-            array($network, $static_ip)
-        )
-        or die('Query failed: '.pg_last_error());
+        if ($static_ip) {
+            $result = pg_query_params(
+                "select max(host(ip)) ip from dhcp_leases where host(network(ip))=$1 and host(ip) > $2",
+                array($network, $static_ip)
+            )
+            or die('Query failed: '.pg_last_error());
+        } else {
+            $result = pg_query_params(
+                "select max(host(ip)) ip from dhcp_leases where host(network(ip))=$1 and expires_on > $2",
+                array($network, date("Y-m-d H:i:s"))
+            )
+            or die('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 

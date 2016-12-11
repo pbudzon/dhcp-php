@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption53 extends DHCPOption
 {
-
     /**
      * Option number = 53.
      */
@@ -34,19 +33,19 @@ class DHCPOption53 extends DHCPOption
     const MSG_DHCPINFORM = 8;
     const MSG_UNUSED = 9;
 
-
+    /**
+     * @return int One to the MSG_xxx consts from this object.
+     */
     public function getType()
     {
-        return array_shift($this->data);
+        return $this->data[0];
     }
-//    /**
-//     * {@inheritdoc}
-//     */
-//    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
-//    {
-//        parent::__construct($length, $data, $logger);
-//        if ($data) {
-//            $this->setType(array_shift($data));
-//        }
-//    }
+
+    /**
+     * @param int $type One to the MSG_xxx consts from this object.
+     */
+    public function setType($type)
+    {
+        $this->data = [$type];
+    }
 }

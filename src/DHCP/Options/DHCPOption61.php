@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption61 extends DHCPOption
 {
-
     /**
      * Option number = 61.
      */
@@ -24,31 +23,15 @@ class DHCPOption61 extends DHCPOption
      */
     protected static $minLength = 2;
 
-    private $type;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
-    {
-        parent::__construct($length, $data, $logger);
-
-        $data = array_map('dechex', $data);
-        $this->type = array_shift($data);
-        $this->data = implode(":", $data);
-    }
-
-    protected function validate($length, $data)
-    {
-        parent::validate($length, $data);
-    }
-
     /**
      * @return mixed
      */
     public function getType()
     {
-        return $this->type;
+        $data = $this->data;
+        $type = array_shift($data);
+
+        return dechex($type);
     }
 
     /**
@@ -56,6 +39,33 @@ class DHCPOption61 extends DHCPOption
      */
     public function setType($type)
     {
-        $this->type = $type;
+        $this->data[0] = hexdec($type);
+    }
+
+    /**
+     * todo: work for type=0 (non-mac client id)
+     * @return string
+     */
+    public function getClientId()
+    {
+        $data = $this->data;
+        array_shift($data); //get rid of the type
+        $data = array_map('dechex', $data);
+
+        return implode(":", $data);
+    }
+
+    /**
+     * todo: work for type=0 (non-mac client id)
+     * @param $clientId
+     */
+    public function setClientId($clientId)
+    {
+        $clientId = array_map('hexdec', explode(":", $clientId));
+        if (isset($this->data[0])) { //preserve type
+            $type = $this->data[0];
+            $this->data = [$type];
+        }
+        $this->data = array_merge($this->data, $clientId);
     }
 }

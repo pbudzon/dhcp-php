@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption51 extends DHCPOption
 {
-
     /**
      * Option number = 51.
      */
@@ -28,29 +27,11 @@ class DHCPOption51 extends DHCPOption
     {
         $this->data = array_map("ord", str_split(pack("N", $time)));
     }
-//    /**
-//     * {@inheritdoc}
-//     */
-//    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
-//    {
-//        parent::__construct($length, $data, $logger);
-//        if ($data) {
-////            $this->setTime(array_shift($data));
-//        }
-//    }
-//
-//    protected function validate($length, $data)
-//    {
-//        parent::validate($length, $data);
-//    }
-//
-//    public function getTime()
-//    {
-//        return $this->time;
-//    }
-//
-//    public function setTime($time)
-//    {
-////        $this->time = array_map("ord", str_split(pack("N", $time)));
-//    }
+
+    public function getTime()
+    {
+        $time = unpack("N", implode("", array_map("chr", $this->data)));
+
+        return array_shift($time);
+    }
 }

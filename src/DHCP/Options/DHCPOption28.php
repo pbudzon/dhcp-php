@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption28 extends DHCPOption
 {
-
     /**
      * Option number = 28.
      */
@@ -24,8 +23,13 @@ class DHCPOption28 extends DHCPOption
      */
     protected static $length = 4;
 
-    public function setBroadcast($ip)
+    public function setBroadcast($ipAddress)
     {
-        $this->data = explode(".", $ip);
+        $this->data = explode(".", $ipAddress);
+    }
+
+    public function getBroadcast()
+    {
+        return implode(".", $this->data);
     }
 }

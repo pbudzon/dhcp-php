@@ -2,6 +2,7 @@
 namespace DHCP;
 
 use DHCP\Options\DHCPOption;
+use DHCP\Options\DHCPOption53;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -27,10 +28,14 @@ use Psr\Log\LoggerInterface;
  *
  * @package DHCP
  * @see     https://www.ietf.org/rfc/rfc2132.txt RFC2131 Dynamic Host Configuration Protocol
+ *
+ * @SuppressWarnings(PHPMD.StaticAccess)
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
  */
 class DHCPPacket
 {
-
     /**
      * Packet type: request from client
      */
@@ -116,7 +121,7 @@ class DHCPPacket
     /**
      * @var array Magic DHCP Cookie extracted from options.
      * The first four octets of the 'options' field of the DHCP message contain the (decimal) values 99, 130, 83 and
-     * 99, respectively (this is the same magic cookie as is defined in RFC 1497
+     * 99, respectively (this is the same magic cookie as defined in RFC 1497).
      */
     protected $magiccookie;
     /**
@@ -130,7 +135,7 @@ class DHCPPacket
      * @param mixed           $packet Pass binary data from network socket to be processed.
      * @param LoggerInterface $logger
      */
-    public function __construct($packet = false, LoggerInterface $logger = null)
+    public function __construct($packet = null, LoggerInterface $logger = null)
     {
         if ($logger) {
             $this->logger = $logger;
@@ -161,9 +166,11 @@ class DHCPPacket
 
                 $this->options = new DHCPOptions($data, $logger);
             }
-        } else {
-            $this->options = new DHCPOptions(false, $logger);
+
+            return null;
         }
+
+        $this->options = new DHCPOptions(false, $logger);
     }
 
     /**
@@ -219,13 +226,14 @@ class DHCPPacket
      * Finds option describing type of the packet (DISCOVER, OFFER, etc) and returns the type if found.
      *
      * @return int One of the Options\DHCPOption53 MSG_ constants or null if type was not found.
+     *
      */
     public function getType()
     {
         /**
          * @var $typeOption Options\DHCPOption53
          */
-        $typeOption = $this->options->getOption(53);
+        $typeOption = $this->options->getOption(DHCPOption53::getOption());
         if ($typeOption) {
             return $typeOption->getType();
         }
@@ -239,28 +247,12 @@ class DHCPPacket
     public function setType($type)
     {
         $typeOption = new Options\DHCPOption53(1, array($type), $this->logger);
-        $this->options->replaceOption(53, $typeOption);
+        $this->options->replaceOption($typeOption);
     }
-
-    /**
-     * Sets any option to specified value.
-     *
-     * @param int   $option Option number. Option must be defined in Options\DHCPOptionX where X is option number.
-     * @param mixed $value  value to set the option to.
-     */
-//    public function setOption($option, $value)
-//    {
-//        $className = 'DHCP\Options\DHCPOption'.$option;
-//        if (!is_array($value)) {
-//            $value = array($value);
-//        }
-//        $newOption = new $className(count($value), $value, $this->logger);
-//        $this->options->replaceOption($option, $newOption);
-//    }
 
     public function addOption(DHCPOption $option)
     {
-        $this->options->replaceOption($option::getOption(), $option);
+        $this->options->replaceOption($option);
     }
 
     /**

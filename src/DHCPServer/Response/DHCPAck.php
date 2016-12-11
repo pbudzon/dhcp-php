@@ -31,6 +31,9 @@ class DHCPAck extends DHCPResponse
         if ($requested_ip && $requested_ip != $selected_ip['ip']) {
             $response = $this->createResponse(DHCPOption53::MSG_DHCPNAK);
             $response->setFlags(1); //broadcast
+            $end = new DHCPOption255();
+            $response->addOption($end);
+
             $this->logger->info(
                 "Sending Nak for request",
                 array(
@@ -57,7 +60,7 @@ class DHCPAck extends DHCPResponse
         $response->addOption($router);
 
         $dhcp = new DHCPOption54();
-        $dhcp->setDHCP($selected_ip['dhcp']);
+        $dhcp->setIdentifier($selected_ip['dhcp']);
         $response->addOption($dhcp);
 
         $dns = new DHCPOption6();
@@ -71,9 +74,6 @@ class DHCPAck extends DHCPResponse
         $end = new DHCPOption255();
         $response->addOption($end);
 
-//                $response->setOption(15, );
-//                $response->setOption(12, );
-
         $this->logger->info(
             "Sending ack",
             array(
@@ -85,5 +85,11 @@ class DHCPAck extends DHCPResponse
         $this->lockIp($selected_ip, $this->packet->getChaddr(), get_class());
 
         return $response;
+    }
+
+    public function release(DHCPConfig $config)
+    {
+        $this->logger->debug("Received release for: ".$this->packet->getChaddr());
+        $this->releaseIp($this->packet->getYiaddr(), $this->packet->getChaddr(), 'Release');
     }
 }

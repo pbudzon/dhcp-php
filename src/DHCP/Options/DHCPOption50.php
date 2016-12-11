@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption50 extends DHCPOption
 {
-
     /**
      * Option number = 50.
      */
@@ -32,10 +31,10 @@ class DHCPOption50 extends DHCPOption
     /**
      * Set IP using a regular IP format ("4.4.4.4") and not packet data.
      *
-     * @param string $ip IP address, like "1.2.3.4"
+     * @param string $ipAddress IP address, like "1.2.3.4"
      */
-    public function setIp($ip)
+    public function setIp($ipAddress)
     {
-        $this->data = explode(".", $ip);
+        $this->data = explode(".", $ipAddress);
     }
 }

@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
  */
 class DHCPOption12 extends DHCPOption
 {
-
     /**
      * Option number = 12.
      */
@@ -23,13 +22,14 @@ class DHCPOption12 extends DHCPOption
      * {@inheritdoc}
      */
     protected static $minLength = 1;
-//
-//    public function __construct($length = null, $data = array(), LoggerInterface $logger = null)
-//    {
-//        parent::__construct($length, $data, $logger);
-//
-//        if ($data) {
-//            $this->setHostname($data);
-////            $this->setHostname(implode("", array_map('chr', $data)));
-//        }
+
+    public function setHostname($hostname)
+    {
+        $this->data = array_map("ord", str_split($hostname));
+    }
+
+    public function getHostname()
+    {
+        return implode("", array_map('chr', $this->data));
+    }
 }

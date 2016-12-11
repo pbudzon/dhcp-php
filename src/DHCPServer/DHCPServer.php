@@ -3,6 +3,7 @@ namespace DHCPServer;
 
 use DHCP\DHCPPacket;
 use DHCP\Options\DHCPOption53;
+use DHCPServer\Response\DHCPResponse;
 use Monolog\Processor\MemoryUsageProcessor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -83,7 +84,7 @@ class DHCPServer extends Command
                 } else {
                     $this->logger->debug("Parsing packet");
 
-                    $packet = new DHCPPacket($buffer);
+                    $packet = new DHCPPacket($buffer, $this->logger);
                     $this->sendResponse($this->getResponse($packet));
                 }
             }
@@ -107,7 +108,8 @@ class DHCPServer extends Command
                 break;
 
             case DHCPOption53::MSG_DHCPRELEASE:
-                $this->logger->debug("DHCP Release received, not implemented");
+                $this->logger->debug("DHCP Release received, nothing to send");
+                (new Response\DHCPAck($packet, $this->logger))->release($this->config);
                 break;
 
             default:
@@ -117,7 +119,7 @@ class DHCPServer extends Command
         return $response;
     }
 
-    private function sendResponse(DHCPPacket $response)
+    private function sendResponse(DHCPPacket $response = null)
     {
         if ($response) {
             $data = $response->pack();

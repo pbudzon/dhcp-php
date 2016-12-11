@@ -27,4 +27,9 @@ class DHCPOption3 extends DHCPOption
     {
         $this->data = explode(".", $router);
     }
+
+    public function getRouter()
+    {
+        return implode(".", $this->data);
+    }
 }
