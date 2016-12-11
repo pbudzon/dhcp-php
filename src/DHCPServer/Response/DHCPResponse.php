@@ -7,9 +7,16 @@ use DHCPServer\Postgresql;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 
+/**
+ * Class DHCPResponse
+ *
+ * @package DHCPServer\Response
+ *
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ * @SuppressWarnings(PHPMD.StaticAccess)
+ */
 abstract class DHCPResponse
 {
-
     /**
      * @var \DHCP\DHCPPacket
      */
@@ -20,13 +27,19 @@ abstract class DHCPResponse
      */
     protected $logger;
 
-    public function __construct($packet, LoggerInterface $logger)
+    /**
+     * @var DHCPConfig
+     */
+    protected $config;
+
+    public function __construct($packet, DHCPConfig $config, LoggerInterface $logger)
     {
         $this->packet = $packet;
         $this->logger = $logger;
+        $this->config = $config;
     }
 
-    abstract public function respond(DHCPConfig $config);
+    abstract public function respond();
 
     protected function createResponse($type)
     {
@@ -47,52 +60,52 @@ abstract class DHCPResponse
         return $response;
     }
 
-    protected function findIpForClient($mac, DHCPConfig $dhcp_config, $requested_ip = false)
+    protected function findIpForClient($mac, $requestedIp = null)
     {
-        $database = new Postgresql();
-        $static_ip = $database->getStaticIpByMac($mac);
+        $database = new Postgresql($this->config);
+        $staticIp = $database->getStaticIpByMac($mac);
 
-        if ($static_ip) {
-            $ip = $static_ip['ip']."/".DHCPConfig::mask2cidr($static_ip['mask']);
+        if ($staticIp) {
+            $ip = $staticIp['ip']."/".DHCPConfig::mask2cidr($staticIp['mask']);
             if ($database->isFree($ip, $mac)) {
-                if (!$static_ip['lease_time']) {
-                    $static_ip['lease_time'] = 300;
+                if (!$staticIp['lease_time']) {
+                    $staticIp['lease_time'] = 300;
                 }
-                $static_ip['dhcp'] = $dhcp_config->getIp();
+                $staticIp['dhcp'] = $this->config->getIpAddress();
 
-                return $static_ip;
+                return $staticIp;
             }
         }
 
         return array(
-            'ip'         => $this->findDynamicIp($dhcp_config, $mac, $requested_ip),
-            'mask'       => $dhcp_config->getMask(),
-            'router'     => $dhcp_config->getRouter(),
-            'dhcp'       => $dhcp_config->getIp(),
-            'dns'        => $dhcp_config->getDns(),
-            'broadcast'  => $dhcp_config->getBroadcast(),
-            'lease_time' => $dhcp_config->getLeaseTime()
+            'ip'         => $this->findDynamicIp($mac, $requestedIp),
+            'mask'       => $this->config->getMask(),
+            'router'     => $this->config->getRouter(),
+            'dhcp'       => $this->config->getIpAddress(),
+            'dns'        => $this->config->getDns(),
+            'broadcast'  => $this->config->getBroadcast(),
+            'lease_time' => $this->config->getLeaseTime()
         );
     }
 
-    protected function lockIp($selected_ip, $mac, $reason)
+    protected function lockIp($selectedIp, $mac, $reason)
     {
         $this->logger->info(
-            "Client $mac has locked {$selected_ip['ip']} for {$selected_ip['lease_time']}secs, reason: $reason"
+            "Client $mac has locked {$selectedIp['ip']} for {$selectedIp['lease_time']}secs, reason: $reason"
         );
 
-        $ip = $selected_ip['ip']."/".DHCPConfig::mask2cidr($selected_ip['mask']);
-        (new Postgresql())->lockIp($ip, $selected_ip['lease_time'], $mac, $reason);
+        $ip = $selectedIp['ip']."/".DHCPConfig::mask2cidr($selectedIp['mask']);
+        (new Postgresql($this->config))->lockIp($ip, $selectedIp['lease_time'], $mac, $reason);
     }
 
     protected function releaseIp($ip, $mac, $reason)
     {
-        (new Postgresql())->expireIp($ip, $mac, $reason);
+        (new Postgresql($this->config))->expireIp($ip, $mac, $reason);
     }
 
-    private function findDynamicIp(DHCPConfig $config, $mac, $requested_ip)
+    private function findDynamicIp($mac, $requestedIp)
     {
-        $database = new Postgresql();
+        $database = new Postgresql($this->config);
         $currently_assigned = $database->getCurrentLease($mac);
 
         /**
@@ -105,10 +118,12 @@ abstract class DHCPResponse
             return $currently_assigned['ip'];
         }
 
-        $this->logger->debug("No current lease, checking: ".$config->getNetwork());
-        $max_static = $database->getNextDynamicIp($config->getNetwork());
+        /**
+         * todo: respect $requestedIp when possible
+         */
+        $max_static = $database->getNextDynamicIp($this->config->getNetwork());
         if ($max_static) {
-            $this->logger->debug("Giving client $mac next ip after $max_static");
+            $this->logger->debug("Giving client $mac next ip after $max_static (request: $requestedIp)");
             $max_static = ip2long($max_static);
 
             return long2ip($max_static + 1);
@@ -117,6 +132,6 @@ abstract class DHCPResponse
         //no static config and no current leases - get next ip after server
         $this->logger->debug("No active leases found, getting next ip after server");
 
-        return long2ip(ip2long($config->getIp()) + 1);
+        return long2ip(ip2long($this->config->getIpAddress()) + 1);
     }
 }

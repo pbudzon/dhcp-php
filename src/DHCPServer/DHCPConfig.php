@@ -3,32 +3,59 @@ namespace DHCPServer;
 
 class DHCPConfig
 {
-
-    private $ip;
-    private $mask;
-    private $network;
-    private $broadcast;
-    private $router;
-    private $dns;
-    private $lease_time = 300;
-
-    public function __construct($ip = false, $dns = false)
-    {
-        if ($ip) {
-            $this->createConfig($ip, $dns);
-        }
-    }
-
     /**
-     * @return mixed
+     * @var string
      */
-    public function getIp()
+    private $ipAddress;
+    /**
+     * @var string
+     */
+    private $mask;
+    /**
+     * @var string
+     */
+    private $network;
+    /**
+     * @var string
+     */
+    private $broadcast;
+    /**
+     * @var string
+     */
+    private $router;
+    /**
+     * @var array
+     */
+    private $dns = [];
+    /**
+     * Default lease time, in seconds
+     *
+     * @var int
+     */
+    private $leaseTime = 300;
+    /**
+     * @var string
+     */
+    private $dbPassword;
+
+    public function __construct($ipAddress = null, $dbPassword = null, $dns = null)
     {
-        return $this->ip;
+        if ($ipAddress) {
+            $this->createConfig($ipAddress, $dns);
+        }
+        $this->dbPassword = $dbPassword;
     }
 
     /**
-     * @return mixed
+     * @return string
+     */
+    public function getIpAddress()
+    {
+        return $this->ipAddress;
+    }
+
+    /**
+     * @return string
      */
     public function getMask()
     {
@@ -36,7 +63,7 @@ class DHCPConfig
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getNetwork()
     {
@@ -44,7 +71,7 @@ class DHCPConfig
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getBroadcast()
     {
@@ -52,7 +79,7 @@ class DHCPConfig
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getRouter()
     {
@@ -60,7 +87,7 @@ class DHCPConfig
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getDns()
     {
@@ -72,29 +99,35 @@ class DHCPConfig
      */
     public function getLeaseTime()
     {
-        return $this->lease_time;
+        return $this->leaseTime;
     }
 
-
-    private function createConfig($ip, $dns)
+    /**
+     * @return string
+     */
+    public function getDbPassword()
     {
-        $ip = explode("/", $ip);
-        if (count($ip) != 2) {
+        return $this->dbPassword;
+    }
+
+    private function createConfig($ipAddress, $dns)
+    {
+        $ipAddress = explode("/", $ipAddress);
+        if (count($ipAddress) != 2) {
             throw new \InvalidArgumentException("Wrong ip provided, should be in format x.x.x.x/x");
         }
 
-        $this->ip = array_shift($ip);
-        $cidr = array_shift($ip);
+        $this->ipAddress = array_shift($ipAddress);
+        $cidr = array_shift($ipAddress);
 
         $this->network = $this->network($cidr);
         $this->mask = $this->cidr2Mask($cidr);
         $this->broadcast = $this->broadcast($cidr);
-        $this->router = $this->ip;
+        $this->router = $this->ipAddress;
 
+        $this->dns = array($this->router);
         if ($dns) {
             $this->dns = $dns;
-        } else {
-            $this->dns = array($this->router);
         }
     }
 
@@ -115,7 +148,7 @@ class DHCPConfig
 
     private function network($cidr)
     {
-        return long2ip((ip2long($this->ip)) & ((-1 << (32 - (int)$cidr))));
+        return long2ip((ip2long($this->ipAddress)) & ((-1 << (32 - (int)$cidr))));
     }
 
     public static function mask2cidr($mask)

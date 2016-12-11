@@ -11,16 +11,28 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class DHCPServer
+ *
+ * @package DHCPServer
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @SuppressWarnings(PHPMD.ElseExpression)
+ */
 class DHCPServer extends Command
 {
-
+    /**
+     * @var resource
+     */
     private $inputSocket;
+    /**
+     * @var resource
+     */
     private $outputSocket;
     /**
      * @var DHCPConfig
      */
     private $config;
-
     /**
      * @var LoggerInterface
      */
@@ -35,6 +47,11 @@ class DHCPServer extends Command
                 'ip',
                 InputArgument::REQUIRED,
                 'IP address to bind DHCP server to with mask. Example: 10.0.0.1/25'
+            )
+            ->addArgument(
+                'db_password',
+                InputArgument::REQUIRED,
+                'Database password'
             )
             ->addArgument(
                 'dns',
@@ -60,9 +77,12 @@ class DHCPServer extends Command
         $this->logger = new \Monolog\Logger('dhcp');
         $this->logger->pushHandler($handler);
 
-        $this->config = new DHCPConfig($input->getArgument('ip'), $input->getArgument('dns'));
+        $this->config = new DHCPConfig(
+            $input->getArgument('ip'),
+            $input->getArgument('db_password'),
+            $input->getArgument('dns')
+        );
     }
-
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -70,11 +90,11 @@ class DHCPServer extends Command
         $this->outputSocket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         socket_set_option($this->outputSocket, SOL_SOCKET, SO_BROADCAST, 1);
 
-        $ip = $this->config->getIp();
+        $ipAddress = $this->config->getIpAddress();
         if (socket_bind($this->inputSocket, '0.0.0.0', 67)
-            && socket_bind($this->outputSocket, $ip, 68)
+            && socket_bind($this->outputSocket, $ipAddress, 68)
         ) {
-            $this->logger->info("Bind on 0.0.0.0:67 and $ip:68...");
+            $this->logger->info("Bind on 0.0.0.0:67 and $ipAddress:68...");
 
             while (true) {
                 $this->logger->debug("Waiting for data on 0.0.0.0:67...");
@@ -89,7 +109,7 @@ class DHCPServer extends Command
                 }
             }
         } else {
-            $this->logger->emergency("Cannot bind to 0.0.0.0:67 or $ip:68");
+            $this->logger->emergency("Cannot bind to 0.0.0.0:67 or $ipAddress:68");
         }
     }
 
@@ -99,17 +119,17 @@ class DHCPServer extends Command
         switch ($packet->getType()) {
             case DHCPOption53::MSG_DHCPDISCOVER:
                 $this->logger->debug("DHCP Discover received");
-                $response = (new Response\DHCPOffer($packet, $this->logger))->respond($this->config);
+                $response = (new Response\DHCPOffer($packet, $this->config, $this->logger))->respond();
                 break;
 
             case DHCPOption53::MSG_DHCPREQUEST:
                 $this->logger->debug("DHCP Request received");
-                $response = (new Response\DHCPAck($packet, $this->logger))->respond($this->config);
+                $response = (new Response\DHCPAck($packet, $this->config, $this->logger))->respond();
                 break;
 
             case DHCPOption53::MSG_DHCPRELEASE:
                 $this->logger->debug("DHCP Release received, nothing to send");
-                (new Response\DHCPAck($packet, $this->logger))->release($this->config);
+                (new Response\DHCPAck($packet, $this->config, $this->logger))->release();
                 break;
 
             default:

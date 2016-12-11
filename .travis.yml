@@ -8,6 +8,6 @@ php:
 install: composer install --no-interaction --no-progress --no-suggest
 script:
   - ./vendor/bin/phpcs --extensions=php --standard=phpcs.xml -s src/
-#  - ./vendor/bin/phpmd src/ text cleancode,codesize,design,naming,unusedcode
+  - ./vendor/bin/phpmd src/ text cleancode,codesize,design,naming,unusedcode
   - phpunit
 

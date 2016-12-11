@@ -2,30 +2,27 @@
 
 namespace DHCPServer;
 
+/**
+ * Class Postgresql
+ *
+ * @package DHCPServer
+ *
+ * @SuppressWarnings(PHPMD.ElseExpression)
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class Postgresql
 {
-
+    /**
+     * @var resource
+     */
     private $connection;
 
-    public function __construct()
+    public function __construct(DHCPConfig $config)
     {
-        $this->connection = pg_connect("host=127.0.0.1 dbname=postgres user=root password=xyz")
-        or die('Could not connect: '.pg_last_error());
-    }
-
-    public function getServerConfig()
-    {
-        $result = pg_query_params("SELECT * FROM dhcp_config", array())
-        or die('Query failed: '.pg_last_error());
-
-        $rows = pg_fetch_all($result);
-
-        pg_free_result($result);
-        foreach ($rows as $k => $row) {
-            $rows[$k]['dns'] = explode(",", str_replace(array("{", "}"), "", $row['dns']));
+        $this->connection = pg_connect("host=127.0.0.1 dbname=postgres user=root password=".$config->getDbPassword());
+        if (!$this->connection) {
+            throw new \Exception('Could not connect: '.pg_last_error());
         }
-
-        return $rows;
     }
 
     public function getStaticIpByMac($mac)
@@ -36,8 +33,11 @@ class Postgresql
             host(network(ip)) as network,
             host(broadcast(ip)) as broadcast,
             router, dns, lease_time
-            FROM dhcp_static where mac = $1", array($mac))
-        or die('Query failed: '.pg_last_error());
+            FROM dhcp_static where mac = $1", array($mac));
+
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 
@@ -58,8 +58,10 @@ class Postgresql
         $result = pg_query_params(
             "select id from dhcp_leases where ip =$1 and expires_on <= $2",
             array($ip, date("Y-m-d H:i:s"))
-        )
-        or die('Query failed: '.pg_last_error());
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 
@@ -76,8 +78,10 @@ class Postgresql
         $result = pg_query_params(
             "select id from dhcp_leases where ip = $1 and mac=$2 and expires_on <= $3",
             array($ip, $mac, date("Y-m-d H:i:s"))
-        )
-        or die('Query failed: '.pg_last_error());
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 
@@ -100,8 +104,10 @@ class Postgresql
             host(broadcast(ip)) as broadcast
           from dhcp_leases where mac=$1 and expires_on > $2 order by assigned_on limit 1",
             array($mac, $date)
-        )
-        or die('Query failed: '.pg_last_error());
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 
@@ -116,11 +122,13 @@ class Postgresql
     public function lockIp($ip, $time, $mac, $reason)
     {
         $now = time();
-        $assigned_on = date("Y-m-d H:i:s", $now);
-        $expires_on = date("Y-m-d H:i:s", $now + $time);
+        $assignedOn = date("Y-m-d H:i:s", $now);
+        $expiresOn = date("Y-m-d H:i:s", $now + $time);
 
-        $result = pg_query_params("select id from dhcp_leases where mac=$1 and ip = $2", array($mac, $ip))
-        or die('Query failed: '.pg_last_error());
+        $result = pg_query_params("select id from dhcp_leases where mac=$1 and ip = $2", array($mac, $ip));
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 
@@ -129,15 +137,19 @@ class Postgresql
         if ($row) {
             $result = pg_query_params(
                 "update dhcp_leases set expires_on=$1, reason=$2 where mac=$3 and ip=$4",
-                array($expires_on, $reason, $mac, $ip)
-            )
-            or die('Query failed: '.pg_last_error());
+                array($expiresOn, $reason, $mac, $ip)
+            );
+            if (!$result) {
+                throw new \Exception('Query failed: '.pg_last_error());
+            }
         } else {
             $result = pg_query_params(
                 "insert into dhcp_leases (mac,ip,assigned_on,expires_on,reason) values($1, $2, $3, $4, $5)",
-                array($mac, $ip, $assigned_on, $expires_on, $reason)
-            )
-            or die('Query failed: '.pg_last_error());
+                array($mac, $ip, $assignedOn, $expiresOn, $reason)
+            );
+            if (!$result) {
+                throw new \Exception('Query failed: '.pg_last_error());
+            }
         }
 
         pg_free_result($result);
@@ -146,9 +158,11 @@ class Postgresql
         //expire all other active leases for this client
         $result = pg_query_params(
             "update dhcp_leases set expires_on=$1 where mac=$2 and ip!=$3 and expires_on > $4",
-            array($assigned_on, $mac, $ip, $assigned_on)
-        )
-        or die('Query failed: '.pg_last_error());
+            array($assignedOn, $mac, $ip, $assignedOn)
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
         pg_free_result($result);
     }
 
@@ -158,8 +172,10 @@ class Postgresql
         $result = pg_query_params(
             "update dhcp_leases set expires_on=$1, reason=$2 where mac=$3 and ip=$4 and expires_on > $5",
             array($expired, $reason, $mac, $ip, $expired)
-        )
-        or die('Query failed: '.pg_last_error());
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         pg_free_result($result);
 
@@ -167,28 +183,34 @@ class Postgresql
         $result = pg_query_params(
             "update dhcp_leases set expires_on=$1, reason=$2 where mac=$3 and ip!=$4 and expires_on > $5",
             array($expired, $reason, $mac, $ip, $expired)
-        )
-        or die('Query failed: '.pg_last_error());
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         pg_free_result($result);
     }
 
     public function getNextDynamicIp($network)
     {
-        $static_ip = $this->getMaxStaticIpInNetwork($network);
+        $staticIp = $this->getMaxStaticIpInNetwork($network);
 
-        if ($static_ip) {
+        if ($staticIp) {
             $result = pg_query_params(
                 "select max(host(ip)) ip from dhcp_leases where host(network(ip))=$1 and host(ip) > $2",
-                array($network, $static_ip)
-            )
-            or die('Query failed: '.pg_last_error());
+                array($network, $staticIp)
+            );
+            if (!$result) {
+                throw new \Exception('Query failed: '.pg_last_error());
+            }
         } else {
             $result = pg_query_params(
                 "select max(host(ip)) ip from dhcp_leases where host(network(ip))=$1 and expires_on > $2",
                 array($network, date("Y-m-d H:i:s"))
-            )
-            or die('Query failed: '.pg_last_error());
+            );
+            if (!$result) {
+                throw new \Exception('Query failed: '.pg_last_error());
+            }
         }
 
         $row = pg_fetch_assoc($result);
@@ -198,7 +220,7 @@ class Postgresql
             return $row['ip'];
         }
 
-        return $static_ip;
+        return $staticIp;
     }
 
     private function getMaxStaticIpInNetwork($network)
@@ -206,8 +228,10 @@ class Postgresql
         $result = pg_query_params(
             "select max(host(ip)) ip from dhcp_static where host(network(ip))=$1;",
             array($network)
-        )
-        or die('Query failed: '.pg_last_error());
+        );
+        if (!$result) {
+            throw new \Exception('Query failed: '.pg_last_error());
+        }
 
         $row = pg_fetch_assoc($result);
 
