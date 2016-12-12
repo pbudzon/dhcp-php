@@ -14,6 +14,8 @@ on Windows 7, MacOS Sierra and Red Hat Linux 7 (dhclient).
 
 Simply to show it can be done. This code is not intended for production use, but as a learning exercise. It may be
  an easy way for PHP developers to learn more about DHCP protocol.
+ 
+For more details and to see the code in action, check out our blog post: [mysteriouscode.io/blog/dhcp-implementation-in-php/](https://mysteriouscode.io/blog/dhcp-implementation-in-php/)
 
 ## Running DHCPServer
 
