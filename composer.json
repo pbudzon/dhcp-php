@@ -12,7 +12,7 @@
     "php": ">=5.6",
     "ext-sockets": "*",
     "monolog/monolog": "~1.13",
-    "symfony/console": "~2.6",
+    "symfony/console": "~2.6|~4.0",
     "bramus/monolog-colored-line-formatter": "~2.0"
   },
   "autoload": {
